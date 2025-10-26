@@ -636,6 +636,27 @@ class MainApplication(ctk.CTk):
             self.db.close()
             self.quit()
 
+    def show_espacos(self):
+        """Mostra módulo de Espaços"""
+        self.clear_content()
+        self.page_title.configure(text="Espaços Publicitários")
+        from crud_espacos import EspacosCRUD
+        EspacosCRUD(self.main_content, self.db, self)
+
+    def show_pecas(self):
+        """Mostra módulo de Peças"""
+        self.clear_content()
+        self.page_title.configure(text="Peças Criativas")
+        from crud_pecas import PecasCRUD
+        PecasCRUD(self.main_content, self.db, self)
+
+    def show_pagamentos(self):
+        """Mostra módulo de Pagamentos"""
+        self.clear_content()
+        self.page_title.configure(text="Pagamentos")
+        from crud_pagamentos import PagamentosCRUD
+        PagamentosCRUD(self.main_content, self.db, self)
+
 
 # ═════════════════════════════════════════════════════════════════════════════
 # INICIALIZAÇÃO DA APLICAÇÃO
