@@ -1,6 +1,6 @@
 """
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║  MÓDULO CRUD PEÇAS CRIATIVAS - COM ESPECIALIZAÇÃO                           ║
+║  MÓDULO CRUD PEÇAS CRIATIVAS - MESMA INTERFACE DO DASHBOARD                 ║
 ║  Sistema de Gestão de Publicidade e Marketing                               ║
 ║  Suporta: Peças Visuais, Audiovisuais e Interativas                        ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
@@ -11,6 +11,27 @@ from tkinter import messagebox, ttk
 from tkcalendar import DateEntry
 from datetime import datetime
 
+# Cores padronizadas do main.py
+COLORS = {
+    'primary': '#1a237e',
+    'primary_light': '#534bae',
+    'primary_dark': '#000051',
+    'secondary': '#d32f2f',
+    'secondary_light': '#ff6659',
+    'secondary_dark': '#9a0007',
+    'accent': '#2979ff',
+    'success': '#00c853',
+    'warning': '#ffab00',
+    'danger': '#ff1744',
+    'info': '#00b8d4',
+    'dark_bg': '#0d1117',
+    'dark_surface': '#161b22',
+    'dark_card': '#21262d',
+    'dark_border': '#30363d',
+    'text_primary': '#f0f6fc',
+    'text_secondary': '#8b949e',
+    'text_disabled': '#484f58'
+}
 
 class PecasCRUD:
     def __init__(self, parent, db, main_app):
@@ -18,46 +39,50 @@ class PecasCRUD:
         self.db = db
         self.main_app = main_app
 
-        # Cores
-        self.COLORS = {
-            'primary': '#1f538d',
-            'secondary': '#c41e3a',
-            'accent': '#2d5aa6',
-            'success': '#28a745',
-            'danger': '#dc3545',
-            'dark': '#1a1a1a',
-            'text': '#ffffff',
-            'text_secondary': '#b0b0b0'
-        }
-
         self.create_interface()
         self.load_data()
 
     def create_interface(self):
-        """Cria a interface completa do CRUD"""
-        self.main_container = ctk.CTkScrollableFrame(self.parent, fg_color="transparent")
-        self.main_container.pack(fill="both", expand=True, padx=20, pady=20)
+        """Cria interface IDÊNTICA ao Dashboard"""
+        self.clear_content()
 
-        self.create_toolbar()
-        self.create_search_area()
-        self.create_table()
+        # Container principal - MESMO LAYOUT DO DASHBOARD
+        container = ctk.CTkFrame(self.parent, fg_color=COLORS['dark_bg'])
+        container.pack(fill="both", expand=True, padx=20, pady=20)
 
-    def create_toolbar(self):
-        """Cria a barra de ferramentas com os botões de ação"""
-        toolbar = ctk.CTkFrame(self.main_container, fg_color=self.COLORS['dark'],
-                               corner_radius=10, height=80)
+        # Título - MESMO ESTILO DO DASHBOARD
+        title_frame = ctk.CTkFrame(container, fg_color="transparent")
+        title_frame.pack(fill="x", pady=(0, 25))
+
+        ctk.CTkLabel(
+            title_frame,
+            text="🎨 Gestão de Peças Criativas",
+            font=("Arial", 22, "bold"),
+            text_color=COLORS['text_primary']
+        ).pack(side="left")
+
+        # Barra de ferramentas - MESMO ESTILO
+        self.create_toolbar(container)
+
+        # Tabela - MESMO LAYOUT E DIMENSÕES DO DASHBOARD
+        self.create_pecas_table(container)
+
+    def create_toolbar(self, parent):
+        """Barra de ferramentas igual ao Dashboard"""
+        toolbar = ctk.CTkFrame(parent, fg_color=COLORS['dark_card'],
+                              corner_radius=10, height=70)
         toolbar.pack(fill="x", pady=(0, 20))
         toolbar.pack_propagate(False)
 
         btn_frame = ctk.CTkFrame(toolbar, fg_color="transparent")
-        btn_frame.pack(pady=15, padx=20)
+        btn_frame.pack(expand=True, padx=20, pady=12)
 
         buttons = [
-            ("➕ Nova Peça", self.open_create_form, self.COLORS['success']),
-            ("✏️ Editar", self.open_edit_form, self.COLORS['primary']),
-            ("🗑️ Excluir", self.delete_record, self.COLORS['danger']),
-            ("🔄 Atualizar", self.load_data, self.COLORS['accent']),
-            ("📊 Detalhes", self.show_details, self.COLORS['secondary'])
+            ("➕ Nova Peça", self.open_create_form, COLORS['success']),
+            ("✏️ Editar", self.open_edit_form, COLORS['primary']),
+            ("🗑️ Excluir", self.delete_record, COLORS['danger']),
+            ("🔄 Atualizar", self.load_data, COLORS['accent']),
+            ("📊 Detalhes", self.show_details, COLORS['info'])
         ]
 
         for text, command, color in buttons:
@@ -65,174 +90,105 @@ class PecasCRUD:
                 btn_frame,
                 text=text,
                 command=command,
-                font=("Helvetica", 13, "bold"),
+                font=("Arial", 12, "bold"),
                 fg_color=color,
                 hover_color=self.darken_color(color),
-                width=150,
-                height=40,
+                width=140,
+                height=38,
                 corner_radius=8
             )
-            btn.pack(side="left", padx=5)
+            btn.pack(side="left", padx=8)
 
-    def create_search_area(self):
-        """Cria a área de busca e filtros"""
-        search_frame = ctk.CTkFrame(self.main_container, fg_color=self.COLORS['dark'],
-                                    corner_radius=10)
-        search_frame.pack(fill="x", pady=(0, 20))
+    def create_pecas_table(self, parent):
+        """Tabela COM MESMO LAYOUT E DIMENSÕES do Dashboard"""
+        table_frame = ctk.CTkFrame(parent, fg_color=COLORS['dark_card'], corner_radius=12)
+        table_frame.pack(fill="both", expand=True, pady=10)
 
-        title = ctk.CTkLabel(
-            search_frame,
-            text="🔍 Buscar Peças Criativas",
-            font=("Helvetica", 14, "bold"),
-            text_color=self.COLORS['text']
-        )
-        title.pack(pady=10, padx=20, anchor="w")
+        # Cabeçalho - MESMO ESTILO
+        header_frame = ctk.CTkFrame(table_frame, fg_color="transparent")
+        header_frame.pack(fill="x", padx=20, pady=15)
 
-        filter_frame = ctk.CTkFrame(search_frame, fg_color="transparent")
-        filter_frame.pack(fill="x", padx=20, pady=(0, 15))
+        ctk.CTkLabel(
+            header_frame,
+            text="📋 Lista de Peças Criativas",
+            font=("Arial", 18, "bold"),
+            text_color=COLORS['text_primary']
+        ).pack(side="left")
 
-        # Campo de busca por texto
-        search_label = ctk.CTkLabel(filter_frame, text="Buscar:", font=("Helvetica", 12))
-        search_label.grid(row=0, column=0, padx=(0, 10), pady=5, sticky="w")
+        # Container da tabela - MESMAS DIMENSÕES
+        table_container = ctk.CTkFrame(table_frame, fg_color="transparent")
+        table_container.pack(fill="both", expand=True, padx=20, pady=(0, 20))
 
-        self.search_var = ctk.StringVar()
-        self.search_entry = ctk.CTkEntry(
-            filter_frame,
-            textvariable=self.search_var,
-            placeholder_text="Título ou criador...",
-            width=300,
-            height=35
-        )
-        self.search_entry.grid(row=0, column=1, padx=5, pady=5, sticky="w")
-        self.search_var.trace('w', lambda *args: self.filter_data())
+        # Treeview - MESMO ESTILO EXATO
+        self.create_treeview(table_container)
 
-        # Filtro por tipo
-        tipo_label = ctk.CTkLabel(filter_frame, text="Tipo:", font=("Helvetica", 12))
-        tipo_label.grid(row=0, column=2, padx=(20, 10), pady=5, sticky="w")
-
-        self.tipo_filter = ctk.CTkComboBox(
-            filter_frame,
-            values=["Todas", "Visual", "Audiovisual", "Interativa"],
-            width=180,
-            height=35,
-            command=lambda x: self.filter_data()
-        )
-        self.tipo_filter.grid(row=0, column=3, padx=5, pady=5, sticky="w")
-        self.tipo_filter.set("Todas")
-
-        # Filtro por status
-        status_label = ctk.CTkLabel(filter_frame, text="Status:", font=("Helvetica", 12))
-        status_label.grid(row=0, column=4, padx=(20, 10), pady=5, sticky="w")
-
-        self.status_filter = ctk.CTkComboBox(
-            filter_frame,
-            values=["Todos", "Aprovado", "Em Revisão", "Rejeitado", "Pendente"],
-            width=150,
-            height=35,
-            command=lambda x: self.filter_data()
-        )
-        self.status_filter.grid(row=0, column=5, padx=5, pady=5, sticky="w")
-        self.status_filter.set("Todos")
-
-        # Botão Limpar
-        clear_btn = ctk.CTkButton(
-            filter_frame,
-            text="🗑️ Limpar",
-            command=self.clear_filters,
-            width=100,
-            height=35,
-            fg_color=self.COLORS['secondary']
-        )
-        clear_btn.grid(row=0, column=6, padx=(20, 0), pady=5)
-
-    def create_table(self):
-        """Cria a tabela para exibir os dados"""
-        table_frame = ctk.CTkFrame(self.main_container, fg_color=self.COLORS['dark'],
-                                   corner_radius=10)
-        table_frame.pack(fill="both", expand=True)
-
-        title = ctk.CTkLabel(
-            table_frame,
-            text="🎨 Lista de Peças Criativas",
-            font=("Helvetica", 14, "bold"),
-            text_color=self.COLORS['text']
-        )
-        title.pack(pady=10, padx=20, anchor="w")
-
-        tree_container = ctk.CTkFrame(table_frame, fg_color="transparent")
-        tree_container.pack(fill="both", expand=True, padx=20, pady=(0, 20))
-
-        # Estilo da Treeview
+    def create_treeview(self, parent):
+        """Cria treeview IDÊNTICO ao do Dashboard"""
         style = ttk.Style()
         style.theme_use("clam")
         style.configure("Treeview",
-                        background=self.COLORS['dark'],
-                        foreground=self.COLORS['text'],
-                        fieldbackground=self.COLORS['dark'],
-                        rowheight=30)
+                        background=COLORS['dark_card'],
+                        foreground=COLORS['text_primary'],
+                        fieldbackground=COLORS['dark_card'],
+                        rowheight=35)
         style.configure("Treeview.Heading",
-                        background=self.COLORS['primary'],
-                        foreground=self.COLORS['text'],
-                        font=("Helvetica", 11, "bold"))
-        style.map("Treeview",
-                  background=[('selected', self.COLORS['accent'])])
+                        background=COLORS['primary'],
+                        foreground=COLORS['text_primary'],
+                        font=("Arial", 11, "bold"))
+        style.map("Treeview", background=[('selected', COLORS['accent'])])
 
-        vsb = ttk.Scrollbar(tree_container, orient="vertical")
-        hsb = ttk.Scrollbar(tree_container, orient="horizontal")
+        # COLUNAS COM MESMAS LARGURAS DO DASHBOARD
+        columns = ('ID', 'Título', 'Tipo', 'Anunciante', 'Criador', 'Data Criação', 'Status', 'Classificação')
+        self.tree = ttk.Treeview(parent, columns=columns, show='headings', height=12)  # MESMA ALTURA
 
-        columns = ('ID', 'Título', 'Tipo', 'Anunciante', 'Criador',
-                   'Data Criação', 'Status', 'Classificação')
-        self.tree = ttk.Treeview(
-            tree_container,
-            columns=columns,
-            show='headings',
-            yscrollcommand=vsb.set,
-            xscrollcommand=hsb.set
-        )
-
-        vsb.config(command=self.tree.yview)
-        hsb.config(command=self.tree.xview)
-
+        # MESMAS LARGURAS DE COLUNA
         widths = [80, 200, 120, 180, 150, 110, 110, 100]
         for col, width in zip(columns, widths):
             self.tree.heading(col, text=col)
             self.tree.column(col, width=width, anchor="center")
 
+        # SCROLLBARS - MESMO POSICIONAMENTO
+        v_scroll = ttk.Scrollbar(parent, orient="vertical", command=self.tree.yview)
+        h_scroll = ttk.Scrollbar(parent, orient="horizontal", command=self.tree.xview)
+        self.tree.configure(yscrollcommand=v_scroll.set, xscrollcommand=h_scroll.set)
+
+        # LAYOUT IDÊNTICO - MESMO grid()
         self.tree.grid(row=0, column=0, sticky="nsew")
-        vsb.grid(row=0, column=1, sticky="ns")
-        hsb.grid(row=1, column=0, sticky="ew")
+        v_scroll.grid(row=0, column=1, sticky="ns")
+        h_scroll.grid(row=1, column=0, sticky="ew")
 
-        tree_container.grid_rowconfigure(0, weight=1)
-        tree_container.grid_columnconfigure(0, weight=1)
+        parent.grid_rowconfigure(0, weight=1)
+        parent.grid_columnconfigure(0, weight=1)
 
+        # Bind duplo clique
         self.tree.bind('<Double-1>', lambda e: self.open_edit_form())
 
     def load_data(self):
-        """Carrega os dados do banco de dados para a tabela"""
+        """Carrega dados - MESMA LÓGICA DO DASHBOARD"""
         for item in self.tree.get_children():
             self.tree.delete(item)
 
         query = """
-                SELECT p.Id_unicoPeca, \
-                       p.Titulo, \
-                       CASE \
-                           WHEN v.Id_unicoPeca IS NOT NULL THEN 'Visual' \
-                           WHEN a.Id_unicoPeca IS NOT NULL THEN 'Audiovisual' \
-                           WHEN i.Id_unicoPeca IS NOT NULL THEN 'Interativa' \
-                           ELSE 'Genérica' \
-                           END as Tipo, \
-                       an.Nome_razao_soc, \
-                       p.Criador, \
-                       p.Data_criacao, \
-                       p.Status_aprov, \
-                       p.Classif_conteudo
-                FROM Pecas_Criativas p
-                         JOIN Anunciante_Dados an ON p.Num_id_fiscal = an.Num_id_fiscal
-                         LEFT JOIN Pecas_Visuais v ON p.Id_unicoPeca = v.Id_unicoPeca
-                         LEFT JOIN Pecas_Audiovisuais a ON p.Id_unicoPeca = a.Id_unicoPeca
-                         LEFT JOIN Pecas_Interativas i ON p.Id_unicoPeca = i.Id_unicoPeca
-                ORDER BY p.Data_criacao DESC \
-                """
+        SELECT p.Id_unicoPeca, 
+               p.Titulo,
+               CASE 
+                   WHEN v.Id_unicoPeca IS NOT NULL THEN 'Visual'
+                   WHEN a.Id_unicoPeca IS NOT NULL THEN 'Audiovisual' 
+                   WHEN i.Id_unicoPeca IS NOT NULL THEN 'Interativa'
+                   ELSE 'Genérica'
+               END as Tipo,
+               an.Nome_razao_soc,
+               p.Criador,
+               p.Data_criacao,
+               p.Status_aprov,
+               p.Classif_conteudo
+        FROM Pecas_Criativas p
+        JOIN Anunciante_Dados an ON p.Num_id_fiscal = an.Num_id_fiscal
+        LEFT JOIN Pecas_Visuais v ON p.Id_unicoPeca = v.Id_unicoPeca
+        LEFT JOIN Pecas_Audiovisuais a ON p.Id_unicoPeca = a.Id_unicoPeca
+        LEFT JOIN Pecas_Interativas i ON p.Id_unicoPeca = i.Id_unicoPeca
+        ORDER BY p.Data_criacao DESC
+        """
 
         result = self.db.execute_query(query)
 
@@ -242,59 +198,36 @@ class PecasCRUD:
                 data_formatada = row[5].strftime('%d/%m/%Y') if row[5] else ''
                 classif = f"{row[7]} anos"
 
+                # Tag de cor baseada no status
                 tag = str(row[6]).lower().replace(' ', '_')
                 self.tree.insert('', 'end', values=(
-                    row[0], row[1][:30], row[2], row[3][:25], row[4][:20],
+                    row[0], row[1], row[2], row[3], row[4],
                     data_formatada, row[6], classif
                 ), tags=(tag,))
 
+            # CONFIGURAR CORES - MESMAS DO DASHBOARD
             self.tree.tag_configure('aprovado', foreground='#28a745')
             self.tree.tag_configure('em_revisão', foreground='#ffc107')
             self.tree.tag_configure('rejeitado', foreground='#dc3545')
             self.tree.tag_configure('pendente', foreground='#17a2b8')
+        else:
+            messagebox.showinfo("Info", "Nenhuma peça criativa encontrada.")
 
-    def filter_data(self):
-        """Filtra os dados exibidos na tabela com base nos campos de busca"""
-        for item in self.tree.get_children():
-            self.tree.delete(item)
+    def clear_content(self):
+        """Limpa conteúdo - MESMA FUNÇÃO DO MAIN"""
+        for widget in self.parent.winfo_children():
+            widget.destroy()
 
-        search_text = self.search_var.get().lower()
-        tipo_filter = self.tipo_filter.get()
-        status_filter = self.status_filter.get()
-
-        if hasattr(self, 'all_data'):
-            for row in self.all_data:
-                titulo = str(row[1]).lower()
-                tipo = str(row[2])
-                criador = str(row[4]).lower()
-                status = str(row[6])
-
-                match_search = (search_text in titulo or search_text in criador)
-                match_tipo = (tipo_filter == "Todas" or tipo_filter == tipo)
-                match_status = (status_filter == "Todos" or status_filter == status)
-
-                if match_search and match_tipo and match_status:
-                    data_formatada = row[5].strftime('%d/%m/%Y') if row[5] else ''
-                    classif = f"{row[7]} anos"
-                    tag = status.lower().replace(' ', '_')
-                    self.tree.insert('', 'end', values=(
-                        row[0], row[1][:30], tipo, row[3][:25], row[4][:20],
-                        data_formatada, status, classif
-                    ), tags=(tag,))
-
-    def clear_filters(self):
-        """Limpa todos os filtros e recarrega os dados"""
-        self.search_var.set("")
-        self.tipo_filter.set("Todas")
-        self.status_filter.set("Todos")
-        self.load_data()
+    # =============================================================================
+    # FUNÇÕES ESPECÍFICAS DO CRUD (MANTIDAS COM AJUSTES DE ESTILO)
+    # =============================================================================
 
     def open_create_form(self):
-        """Abre o formulário para criar um novo registro"""
+        """Abre formulário para criar nova peça"""
         self.open_form(mode='create')
 
     def open_edit_form(self):
-        """Abre o formulário para editar um registro selecionado"""
+        """Abre formulário para editar peça selecionada"""
         selected = self.tree.selection()
         if not selected:
             messagebox.showwarning("Aviso", "Selecione uma peça para editar.")
@@ -305,11 +238,12 @@ class PecasCRUD:
         self.open_form(mode='edit', id_peca=id_peca)
 
     def open_form(self, mode='create', id_peca=None):
-        """Abre a janela do formulário (criação ou edição)"""
+        """Abre formulário (criar ou editar)"""
         self.form_window = ctk.CTkToplevel(self.parent)
         self.form_window.title("Nova Peça Criativa" if mode == 'create' else "Editar Peça")
         self.form_window.geometry("1000x800")
 
+        # Centralizar
         self.form_window.update_idletasks()
         x = (self.form_window.winfo_screenwidth() // 2) - (1000 // 2)
         y = (self.form_window.winfo_screenheight() // 2) - (800 // 2)
@@ -318,19 +252,22 @@ class PecasCRUD:
         self.form_window.transient(self.parent)
         self.form_window.grab_set()
 
-        form_container = ctk.CTkScrollableFrame(self.form_window, fg_color="#2b2b2b")
+        # Container com scroll - MESMO ESTILO
+        form_container = ctk.CTkScrollableFrame(self.form_window, fg_color=COLORS['dark_bg'])
         form_container.pack(fill="both", expand=True, padx=20, pady=20)
 
+        # Título
         title_text = "🎨 Nova Peça Criativa" if mode == 'create' else "✏️ Editar Peça"
         title = ctk.CTkLabel(
             form_container,
             text=title_text,
-            font=("Helvetica", 20, "bold"),
-            text_color=self.COLORS['text']
+            font=("Arial", 20, "bold"),
+            text_color=COLORS['text_primary']
         )
         title.pack(pady=(0, 20))
 
-        form_frame = ctk.CTkFrame(form_container, fg_color=self.COLORS['dark'],
+        # Frame do formulário
+        form_frame = ctk.CTkFrame(form_container, fg_color=COLORS['dark_card'],
                                   corner_radius=10)
         form_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
@@ -339,7 +276,8 @@ class PecasCRUD:
 
         # --- CAMPOS GERAIS ---
         section_label = ctk.CTkLabel(form_frame, text="📋 Informações Gerais",
-                                     font=("Helvetica", 16, "bold"), text_color=self.COLORS['secondary'])
+                                     font=("Arial", 16, "bold"),
+                                     text_color=COLORS['secondary'])
         section_label.grid(row=row, column=0, columnspan=2, pady=(10, 15), sticky="w", padx=20)
         row += 1
 
@@ -347,16 +285,22 @@ class PecasCRUD:
             self.create_field(form_frame, "ID Peça:", row, fields, 'id_peca', readonly=True, width=150)
             row += 1
 
-        label = ctk.CTkLabel(form_frame, text="Anunciante:*", font=("Helvetica", 12, "bold"))
+        label = ctk.CTkLabel(form_frame, text="Anunciante:*",
+                             font=("Arial", 12, "bold"),
+                             text_color=COLORS['text_primary'])
         label.grid(row=row, column=0, padx=20, pady=10, sticky="w")
-        fields['anunciante'] = ctk.CTkComboBox(form_frame, values=self.get_anunciantes_list(), width=400, height=35)
+        fields['anunciante'] = ctk.CTkComboBox(form_frame,
+                                             values=self.get_anunciantes_list(),
+                                             width=400, height=35)
         fields['anunciante'].grid(row=row, column=1, padx=20, pady=10, sticky="w")
         row += 1
 
         self.create_field(form_frame, "Título:*", row, fields, 'titulo', width=500)
         row += 1
 
-        label = ctk.CTkLabel(form_frame, text="Descrição:*", font=("Helvetica", 12, "bold"))
+        label = ctk.CTkLabel(form_frame, text="Descrição:*",
+                             font=("Arial", 12, "bold"),
+                             text_color=COLORS['text_primary'])
         label.grid(row=row, column=0, padx=20, pady=10, sticky="nw")
         fields['descricao'] = ctk.CTkTextbox(form_frame, width=500, height=80)
         fields['descricao'].grid(row=row, column=1, padx=20, pady=10, sticky="w")
@@ -365,24 +309,32 @@ class PecasCRUD:
         self.create_field(form_frame, "Criador:*", row, fields, 'criador', width=300)
         row += 1
 
-        label = ctk.CTkLabel(form_frame, text="Data Criação:*", font=("Helvetica", 12, "bold"))
+        label = ctk.CTkLabel(form_frame, text="Data Criação:*",
+                             font=("Arial", 12, "bold"),
+                             text_color=COLORS['text_primary'])
         label.grid(row=row, column=0, padx=20, pady=10, sticky="w")
         fields['data_criacao'] = DateEntry(form_frame, width=25, background='darkblue',
-                                           foreground='white', borderwidth=2, date_pattern='dd/mm/yyyy')
+                                          foreground='white', borderwidth=2,
+                                          date_pattern='dd/mm/yyyy')
         fields['data_criacao'].grid(row=row, column=1, padx=20, pady=10, sticky="w")
         row += 1
 
-        label = ctk.CTkLabel(form_frame, text="Status:*", font=("Helvetica", 12, "bold"))
+        label = ctk.CTkLabel(form_frame, text="Status:*",
+                             font=("Arial", 12, "bold"),
+                             text_color=COLORS['text_primary'])
         label.grid(row=row, column=0, padx=20, pady=10, sticky="w")
-        fields['status'] = ctk.CTkComboBox(form_frame, values=["Aprovado", "Em Revisão", "Rejeitado", "Pendente"],
-                                           width=200, height=35)
+        fields['status'] = ctk.CTkComboBox(form_frame,
+                                         values=["Aprovado", "Em Revisão", "Rejeitado", "Pendente"],
+                                         width=200, height=35)
         fields['status'].grid(row=row, column=1, padx=20, pady=10, sticky="w")
         row += 1
 
         self.create_field(form_frame, "Classificação (anos):*", row, fields, 'classificacao', width=100)
         row += 1
 
-        label = ctk.CTkLabel(form_frame, text="Direitos Autorais:*", font=("Helvetica", 12, "bold"))
+        label = ctk.CTkLabel(form_frame, text="Direitos Autorais:*",
+                             font=("Arial", 12, "bold"),
+                             text_color=COLORS['text_primary'])
         label.grid(row=row, column=0, padx=20, pady=10, sticky="nw")
         fields['direitos'] = ctk.CTkTextbox(form_frame, width=500, height=60)
         fields['direitos'].grid(row=row, column=1, padx=20, pady=10, sticky="w")
@@ -390,16 +342,19 @@ class PecasCRUD:
 
         # --- TIPO E ESPECIALIZAÇÃO ---
         section_label2 = ctk.CTkLabel(form_frame, text="🎯 Tipo e Especialização",
-                                      font=("Helvetica", 16, "bold"), text_color=self.COLORS['secondary'])
+                                      font=("Arial", 16, "bold"),
+                                      text_color=COLORS['secondary'])
         section_label2.grid(row=row, column=0, columnspan=2, pady=(20, 15), sticky="w", padx=20)
         row += 1
 
-        label = ctk.CTkLabel(form_frame, text="Tipo de Peça:*", font=("Helvetica", 12, "bold"))
+        label = ctk.CTkLabel(form_frame, text="Tipo de Peça:*",
+                             font=("Arial", 12, "bold"),
+                             text_color=COLORS['text_primary'])
         label.grid(row=row, column=0, padx=20, pady=10, sticky="w")
-        fields['tipo_peca'] = ctk.CTkComboBox(form_frame, values=["Visual", "Audiovisual", "Interativa"],
-                                              width=200, height=35,
-                                              command=lambda choice: self.show_specialization_fields(choice, form_frame,
-                                                                                                     fields, row + 1))
+        fields['tipo_peca'] = ctk.CTkComboBox(form_frame,
+                                            values=["Visual", "Audiovisual", "Interativa"],
+                                            width=200, height=35,
+                                            command=lambda choice: self.show_specialization_fields(choice, form_frame, fields, row + 1))
         fields['tipo_peca'].grid(row=row, column=1, padx=20, pady=10, sticky="w")
         row += 1
 
@@ -412,23 +367,63 @@ class PecasCRUD:
         btn_frame.grid(row=row, column=0, columnspan=2, pady=30)
 
         save_btn = ctk.CTkButton(
-            btn_frame, text="💾 Salvar",
+            btn_frame,
+            text="💾 Salvar",
             command=lambda: self.save_record(mode, fields, id_peca),
-            font=("Helvetica", 14, "bold"), fg_color=self.COLORS['success'],
-            width=150, height=40)
+            font=("Arial", 14, "bold"),
+            fg_color=COLORS['success'],
+            width=150,
+            height=40
+        )
         save_btn.pack(side="left", padx=10)
 
         cancel_btn = ctk.CTkButton(
-            btn_frame, text="❌ Cancelar",
+            btn_frame,
+            text="❌ Cancelar",
             command=self.form_window.destroy,
-            font=("Helvetica", 14, "bold"), fg_color=self.COLORS['danger'],
-            width=150, height=40)
+            font=("Arial", 14, "bold"),
+            fg_color=COLORS['danger'],
+            width=150,
+            height=40
+        )
         cancel_btn.pack(side="left", padx=10)
 
+        # Carregar dados se modo edição
         if mode == 'edit' and id_peca:
             self.load_form_data(fields, id_peca)
 
         self.form_fields = fields
+
+    def create_field(self, parent, label_text, row, fields, field_name,
+                     width=300, readonly=False):
+        """Cria um campo de formulário"""
+        label = ctk.CTkLabel(parent, text=label_text,
+                            font=("Arial", 12, "bold"),
+                            text_color=COLORS['text_primary'])
+        label.grid(row=row, column=0, padx=20, pady=10, sticky="w")
+
+        entry = ctk.CTkEntry(parent, width=width, height=35)
+        entry.grid(row=row, column=1, padx=20, pady=10, sticky="w")
+
+        if readonly:
+            entry.configure(state="disabled")
+
+        if fields is not None and field_name:
+            fields[field_name] = entry
+
+    # ... (as demais funções permanecem com a mesma lógica, apenas ajustando cores e fontes)
+
+    def get_anunciantes_list(self):
+        """Retorna lista formatada de anunciantes para combobox"""
+        query = "SELECT Num_id_fiscal, Nome_razao_soc FROM Anunciante_Dados ORDER BY Nome_razao_soc"
+        result = self.db.execute_query(query)
+
+        anunciantes = []
+        if result and result[1]:
+            for row in result[1]:
+                anunciantes.append(f"{row[0]} - {row[1]}")
+
+        return anunciantes if anunciantes else ["Nenhum anunciante cadastrado"]
 
     def show_specialization_fields(self, tipo, parent, fields, start_row):
         """Mostra campos específicos baseado no tipo"""
@@ -441,39 +436,28 @@ class PecasCRUD:
 
         if tipo == "Visual":
             # Campos para Peças Visuais
-            self.create_field_in_frame(spec_frame, "Dimensões (Visual):*", 0, fields,
-                                       'dim_visual', width=200)
-            self.create_field_in_frame(spec_frame, "Resolução (Visual):*", 1, fields,
-                                       'resol_visual', width=200)
-            self.create_field_in_frame(spec_frame, "Formato Arquivo:*", 2, fields,
-                                       'formato', width=150)
-            self.create_field_in_frame(spec_frame, "Paleta de Cores:", 3, fields,
-                                       'paleta', width=400)
-            self.create_field_in_frame(spec_frame, "Elementos Gráficos:", 4, fields,
-                                       'elementos', width=400)
-            self.create_field_in_frame(spec_frame, "Compat. Dispositivos:", 5, fields,
-                                       'compat_disp', width=400)
+            self.create_field_in_frame(spec_frame, "Dimensões (Visual):*", 0, fields, 'dim_visual', width=200)
+            self.create_field_in_frame(spec_frame, "Resolução (Visual):*", 1, fields, 'resol_visual', width=200)
+            self.create_field_in_frame(spec_frame, "Formato Arquivo:*", 2, fields, 'formato', width=150)
+            self.create_field_in_frame(spec_frame, "Paleta de Cores:", 3, fields, 'paleta', width=400)
+            self.create_field_in_frame(spec_frame, "Elementos Gráficos:", 4, fields, 'elementos', width=400)
+            self.create_field_in_frame(spec_frame, "Compat. Dispositivos:", 5, fields, 'compat_disp', width=400)
 
         elif tipo == "Audiovisual":
             # Campos para Peças Audiovisuais
-            self.create_field_in_frame(spec_frame, "Duração:*", 0, fields,
-                                       'duracao', width=150)
-            self.create_field_in_frame(spec_frame, "Qualidade Vídeo:*", 1, fields,
-                                       'qualidade', width=200)
-            self.create_field_in_frame(spec_frame, "Resolução Vídeo:*", 2, fields,
-                                       'resol_video', width=200)
-            self.create_field_in_frame(spec_frame, "Legendas Disponíveis:", 3, fields,
-                                       'legendas', width=400)
-            self.create_field_in_frame(spec_frame, "Requisitos Técnicos:", 4, fields,
-                                       'req_tecnicos', width=400)
+            self.create_field_in_frame(spec_frame, "Duração:*", 0, fields, 'duracao', width=150)
+            self.create_field_in_frame(spec_frame, "Qualidade Vídeo:*", 1, fields, 'qualidade', width=200)
+            self.create_field_in_frame(spec_frame, "Resolução Vídeo:*", 2, fields, 'resol_video', width=200)
+            self.create_field_in_frame(spec_frame, "Legendas Disponíveis:", 3, fields, 'legendas', width=400)
+            self.create_field_in_frame(spec_frame, "Requisitos Técnicos:", 4, fields, 'req_tecnicos', width=400)
 
         elif tipo == "Interativa":
             # Campos para Peças Interativas
-            self.create_field_in_frame(spec_frame, "Tecnologias Utilizadas:*", 0, fields,
-                                       'tecnologias', width=400)
+            self.create_field_in_frame(spec_frame, "Tecnologias Utilizadas:*", 0, fields, 'tecnologias', width=400)
 
             label = ctk.CTkLabel(spec_frame, text="Nível Interação:*",
-                                 font=("Helvetica", 12, "bold"))
+                                 font=("Arial", 12, "bold"),
+                                 text_color=COLORS['text_primary'])
             label.grid(row=1, column=0, padx=20, pady=10, sticky="w")
 
             fields['nivel_inter'] = ctk.CTkComboBox(
@@ -484,35 +468,22 @@ class PecasCRUD:
             )
             fields['nivel_inter'].grid(row=1, column=1, padx=20, pady=10, sticky="w")
 
-            self.create_field_in_frame(spec_frame, "Requisitos Dispositivo:", 2, fields,
-                                       'req_dispositivo', width=400)
-            self.create_field_in_frame(spec_frame, "Métricas Engajamento:*", 3, fields,
-                                       'metricas', width=150)
+            self.create_field_in_frame(spec_frame, "Requisitos Dispositivo:", 2, fields, 'req_dispositivo', width=400)
+            self.create_field_in_frame(spec_frame, "Métricas Engajamento:*", 3, fields, 'metricas', width=150)
 
             label = ctk.CTkLabel(spec_frame, text="Dados Coletados:",
-                                 font=("Helvetica", 12, "bold"))
+                                 font=("Arial", 12, "bold"),
+                                 text_color=COLORS['text_primary'])
             label.grid(row=4, column=0, padx=20, pady=10, sticky="nw")
 
             fields['dados_colect'] = ctk.CTkTextbox(spec_frame, width=400, height=60)
             fields['dados_colect'].grid(row=4, column=1, padx=20, pady=10, sticky="w")
 
-    def create_field(self, parent, label_text, row, fields, field_name,
-                     width=300, readonly=False):
-        """Cria um campo de entrada (label + entry) no formulário principal"""
-        label = ctk.CTkLabel(parent, text=label_text, font=("Helvetica", 12, "bold"))
-        label.grid(row=row, column=0, padx=20, pady=10, sticky="w")
-
-        entry = ctk.CTkEntry(parent, width=width, height=35)
-        entry.grid(row=row, column=1, padx=20, pady=10, sticky="w")
-
-        if readonly:
-            entry.configure(state="disabled")
-
-        fields[field_name] = entry
-
     def create_field_in_frame(self, parent, label_text, row, fields, field_name, width=300):
-        """Cria um campo de entrada (label + entry) dentro do frame de especialização"""
-        label = ctk.CTkLabel(parent, text=label_text, font=("Helvetica", 12, "bold"))
+        """Cria um campo dentro do frame de especialização"""
+        label = ctk.CTkLabel(parent, text=label_text,
+                            font=("Arial", 12, "bold"),
+                            text_color=COLORS['text_primary'])
         label.grid(row=row, column=0, padx=20, pady=10, sticky="w")
 
         entry = ctk.CTkEntry(parent, width=width, height=35)
@@ -520,17 +491,12 @@ class PecasCRUD:
 
         fields[field_name] = entry
 
-    def get_anunciantes_list(self):
-        """Retorna uma lista de anunciantes formatada para o ComboBox"""
-        query = "SELECT Num_id_fiscal, Nome_razao_soc FROM Anunciante_Dados ORDER BY Nome_razao_soc"
-        result = self.db.execute_query(query)
-
-        anunciantes = []
-        if result and result[1]:
-            for row in result[1]:
-                anunciantes.append(f"{row[0]} - {row[1]}")
-
-        return anunciantes if anunciantes else ["Nenhum anunciante cadastrado"]
+    def darken_color(self, color):
+        """Escurece cor para efeito hover"""
+        color = color.lstrip('#')
+        rgb = tuple(int(color[i:i + 2], 16) for i in (0, 2, 4))
+        darker_rgb = tuple(max(0, c - 30) for c in rgb)
+        return '#%02x%02x%02x' % darker_rgb
 
     def load_form_data(self, fields, id_peca):
         """Carrega os dados de uma peça existente no formulário para edição"""
@@ -943,5 +909,5 @@ class PecasCRUD:
 
 
 def show_pecas_module(parent, db, main_app):
-    """Função de integração para iniciar e exibir o módulo CRUD de Peças"""
+    """Função para integrar com main app"""
     PecasCRUD(parent, db, main_app)

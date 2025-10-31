@@ -1,60 +1,89 @@
 """
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║  MÓDULO CRUD PAGAMENTOS - GESTÃO COMPLETA                                   ║
+║  MÓDULO CRUD PAGAMENTOS - MESMA INTERFACE DO DASHBOARD                       ║
 ║  Sistema de Gestão de Publicidade e Marketing                               ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 """
 
 import customtkinter as ctk
 from tkinter import messagebox, ttk
+from datetime import datetime
+from tkcalendar import DateEntry
+import re
 
+# Cores padronizadas do main.py
+COLORS = {
+    'primary': '#1a237e',
+    'primary_light': '#534bae',
+    'primary_dark': '#000051',
+    'secondary': '#d32f2f',
+    'secondary_light': '#ff6659',
+    'secondary_dark': '#9a0007',
+    'accent': '#2979ff',
+    'success': '#00c853',
+    'warning': '#ffab00',
+    'danger': '#ff1744',
+    'info': '#00b8d4',
+    'dark_bg': '#0d1117',
+    'dark_surface': '#161b22',
+    'dark_card': '#21262d',
+    'dark_border': '#30363d',
+    'text_primary': '#f0f6fc',
+    'text_secondary': '#8b949e',
+    'text_disabled': '#484f58'
+}
 
 class PagamentosCRUD:
     def __init__(self, parent, db, main_app):
         self.parent = parent
         self.db = db
         self.main_app = main_app
-
-        # Cores
-        self.COLORS = {
-            'primary': '#1f538d',
-            'secondary': '#c41e3a',
-            'accent': '#2d5aa6',
-            'success': '#28a745',
-            'danger': '#dc3545',
-            'dark': '#1a1a1a',
-            'text': '#ffffff',
-            'text_secondary': '#b0b0b0'
-        }
+        self.selected_item = None
 
         self.create_interface()
         self.load_data()
 
     def create_interface(self):
-        """Cria interface"""
-        self.main_container = ctk.CTkScrollableFrame(self.parent, fg_color="transparent")
-        self.main_container.pack(fill="both", expand=True, padx=20, pady=20)
+        """Cria interface IDÊNTICA ao Dashboard"""
+        self.clear_content()
 
-        self.create_toolbar()
-        self.create_search_area()
-        self.create_table()
+        # Container principal - MESMO LAYOUT DO DASHBOARD
+        container = ctk.CTkFrame(self.parent, fg_color=COLORS['dark_bg'])
+        container.pack(fill="both", expand=True, padx=20, pady=20)
 
-    def create_toolbar(self):
-        """Barra de ferramentas"""
-        toolbar = ctk.CTkFrame(self.main_container, fg_color=self.COLORS['dark'],
-                               corner_radius=10, height=80)
+        # Título - MESMO ESTILO DO DASHBOARD
+        title_frame = ctk.CTkFrame(container, fg_color="transparent")
+        title_frame.pack(fill="x", pady=(0, 25))
+
+        ctk.CTkLabel(
+            title_frame,
+            text="💳 Gestão de Pagamentos",
+            font=("Arial", 22, "bold"),
+            text_color=COLORS['text_primary']
+        ).pack(side="left")
+
+        # Barra de ferramentas - MESMO ESTILO
+        self.create_toolbar(container)
+
+        # Tabela - MESMO LAYOUT E DIMENSÕES DO DASHBOARD
+        self.create_pagamentos_table(container)
+
+    def create_toolbar(self, parent):
+        """Barra de ferramentas igual ao Dashboard"""
+        toolbar = ctk.CTkFrame(parent, fg_color=COLORS['dark_card'],
+                              corner_radius=10, height=70)
         toolbar.pack(fill="x", pady=(0, 20))
         toolbar.pack_propagate(False)
 
         btn_frame = ctk.CTkFrame(toolbar, fg_color="transparent")
-        btn_frame.pack(pady=15, padx=20)
+        btn_frame.pack(expand=True, padx=20, pady=12)
 
         buttons = [
-            ("➕ Novo Pagamento", self.open_create_form, self.COLORS['success']),
-            ("✏️ Editar", self.open_edit_form, self.COLORS['primary']),
-            ("🗑️ Excluir", self.delete_record, self.COLORS['danger']),
-            ("🔄 Atualizar", self.load_data, self.COLORS['accent']),
-            ("📊 Relatório Financeiro", self.show_financial_report, self.COLORS['secondary'])
+            ("➕ Novo Pagamento", self.open_create_form, COLORS['success']),
+            ("✏️ Editar", self.open_edit_form, COLORS['primary']),
+            ("🗑️ Excluir", self.delete_record, COLORS['danger']),
+            ("🔄 Atualizar", self.load_data, COLORS['accent']),
+            ("📊 Relatório", self.show_financial_report, COLORS['info'])
         ]
 
         for text, command, color in buttons:
@@ -62,171 +91,97 @@ class PagamentosCRUD:
                 btn_frame,
                 text=text,
                 command=command,
-                font=("Helvetica", 13, "bold"),
+                font=("Arial", 12, "bold"),
                 fg_color=color,
                 hover_color=self.darken_color(color),
-                width=180,
-                height=40,
+                width=140,
+                height=38,
                 corner_radius=8
             )
-            btn.pack(side="left", padx=5)
+            btn.pack(side="left", padx=8)
 
-    def create_search_area(self):
-        """Área de busca"""
-        search_frame = ctk.CTkFrame(self.main_container, fg_color=self.COLORS['dark'],
-                                    corner_radius=10)
-        search_frame.pack(fill="x", pady=(0, 20))
+    def create_pagamentos_table(self, parent):
+        """Tabela COM MESMO LAYOUT E DIMENSÕES do Dashboard"""
+        table_frame = ctk.CTkFrame(parent, fg_color=COLORS['dark_card'], corner_radius=12)
+        table_frame.pack(fill="both", expand=True, pady=10)
 
-        title = ctk.CTkLabel(
-            search_frame,
-            text="🔍 Buscar Pagamentos",
-            font=("Helvetica", 14, "bold"),
-            text_color=self.COLORS['text']
-        )
-        title.pack(pady=10, padx=20, anchor="w")
+        # Cabeçalho - MESMO ESTILO
+        header_frame = ctk.CTkFrame(table_frame, fg_color="transparent")
+        header_frame.pack(fill="x", padx=20, pady=15)
 
-        filter_frame = ctk.CTkFrame(search_frame, fg_color="transparent")
-        filter_frame.pack(fill="x", padx=20, pady=(0, 15))
+        ctk.CTkLabel(
+            header_frame,
+            text="📋 Lista de Pagamentos",
+            font=("Arial", 18, "bold"),
+            text_color=COLORS['text_primary']
+        ).pack(side="left")
 
-        # Busca
-        search_label = ctk.CTkLabel(filter_frame, text="Código:", font=("Helvetica", 12))
-        search_label.grid(row=0, column=0, padx=(0, 10), pady=5, sticky="w")
+        # Container da tabela - MESMAS DIMENSÕES
+        table_container = ctk.CTkFrame(table_frame, fg_color="transparent")
+        table_container.pack(fill="both", expand=True, padx=20, pady=(0, 20))
 
-        self.search_var = ctk.StringVar()
-        self.search_entry = ctk.CTkEntry(
-            filter_frame,
-            textvariable=self.search_var,
-            placeholder_text="Código do pagamento...",
-            width=200,
-            height=35
-        )
-        self.search_entry.grid(row=0, column=1, padx=5, pady=5, sticky="w")
-        self.search_var.trace('w', lambda *args: self.filter_data())
+        # Treeview - MESMO ESTILO EXATO
+        self.create_treeview(table_container)
 
-        # Filtro por modalidade
-        modal_label = ctk.CTkLabel(filter_frame, text="Modalidade:", font=("Helvetica", 12))
-        modal_label.grid(row=0, column=2, padx=(20, 10), pady=5, sticky="w")
-
-        self.modal_filter = ctk.CTkComboBox(
-            filter_frame,
-            values=self.get_modalidades_list(),
-            width=180,
-            height=35,
-            command=lambda x: self.filter_data()
-        )
-        self.modal_filter.grid(row=0, column=3, padx=5, pady=5, sticky="w")
-        self.modal_filter.set("Todas")
-
-        # Filtro por método
-        metodo_label = ctk.CTkLabel(filter_frame, text="Método:", font=("Helvetica", 12))
-        metodo_label.grid(row=0, column=4, padx=(20, 10), pady=5, sticky="w")
-
-        self.metodo_filter = ctk.CTkComboBox(
-            filter_frame,
-            values=["Todos", "Transferência Bancária", "Cartão de Crédito",
-                    "Cheque", "M-Pesa", "Dinheiro"],
-            width=200,
-            height=35,
-            command=lambda x: self.filter_data()
-        )
-        self.metodo_filter.grid(row=0, column=5, padx=5, pady=5, sticky="w")
-        self.metodo_filter.set("Todos")
-
-        # Limpar
-        clear_btn = ctk.CTkButton(
-            filter_frame,
-            text="🗑️ Limpar",
-            command=self.clear_filters,
-            width=100,
-            height=35,
-            fg_color=self.COLORS['secondary']
-        )
-        clear_btn.grid(row=0, column=6, padx=(20, 0), pady=5)
-
-    def create_table(self):
-        """Tabela de dados"""
-        table_frame = ctk.CTkFrame(self.main_container, fg_color=self.COLORS['dark'],
-                                   corner_radius=10)
-        table_frame.pack(fill="both", expand=True)
-
-        title = ctk.CTkLabel(
-            table_frame,
-            text="💳 Lista de Pagamentos",
-            font=("Helvetica", 14, "bold"),
-            text_color=self.COLORS['text']
-        )
-        title.pack(pady=10, padx=20, anchor="w")
-
-        tree_container = ctk.CTkFrame(table_frame, fg_color="transparent")
-        tree_container.pack(fill="both", expand=True, padx=20, pady=(0, 20))
-
-        # Estilo
+    def create_treeview(self, parent):
+        """Cria treeview IDÊNTICO ao do Dashboard"""
         style = ttk.Style()
         style.theme_use("clam")
         style.configure("Treeview",
-                        background=self.COLORS['dark'],
-                        foreground=self.COLORS['text'],
-                        fieldbackground=self.COLORS['dark'],
-                        rowheight=30)
+                        background=COLORS['dark_card'],
+                        foreground=COLORS['text_primary'],
+                        fieldbackground=COLORS['dark_card'],
+                        rowheight=35)
         style.configure("Treeview.Heading",
-                        background=self.COLORS['primary'],
-                        foreground=self.COLORS['text'],
-                        font=("Helvetica", 11, "bold"))
-        style.map("Treeview",
-                  background=[('selected', self.COLORS['accent'])])
+                        background=COLORS['primary'],
+                        foreground=COLORS['text_primary'],
+                        font=("Arial", 11, "bold"))
+        style.map("Treeview", background=[('selected', COLORS['accent'])])
 
-        # Scrollbars
-        vsb = ttk.Scrollbar(tree_container, orient="vertical")
-        hsb = ttk.Scrollbar(tree_container, orient="horizontal")
+        # COLUNAS COM MESMAS LARGURAS DO DASHBOARD
+        columns = ('Código', 'Modalidade', 'Valor', 'Desconto', 'Valor Final', 'Método', 'Status')
+        self.tree = ttk.Treeview(parent, columns=columns, show='headings', height=12)
 
-        # Treeview
-        columns = ('Código', 'Modalidade', 'Valor', 'Desconto', 'Valor Final',
-                   'Método Pagamento', 'Reconciliação')
-        self.tree = ttk.Treeview(
-            tree_container,
-            columns=columns,
-            show='headings',
-            yscrollcommand=vsb.set,
-            xscrollcommand=hsb.set
-        )
-
-        vsb.config(command=self.tree.yview)
-        hsb.config(command=self.tree.xview)
-
-        # Configurar colunas
-        widths = [100, 150, 130, 100, 130, 180, 180]
+        # MESMAS LARGURAS DE COLUNA
+        widths = [100, 150, 120, 100, 120, 150, 100]
         for col, width in zip(columns, widths):
             self.tree.heading(col, text=col)
             self.tree.column(col, width=width, anchor="center")
 
-        # Layout
+        # SCROLLBARS - MESMO POSICIONAMENTO
+        v_scroll = ttk.Scrollbar(parent, orient="vertical", command=self.tree.yview)
+        h_scroll = ttk.Scrollbar(parent, orient="horizontal", command=self.tree.xview)
+        self.tree.configure(yscrollcommand=v_scroll.set, xscrollcommand=h_scroll.set)
+
+        # LAYOUT IDÊNTICO - MESMO grid()
         self.tree.grid(row=0, column=0, sticky="nsew")
-        vsb.grid(row=0, column=1, sticky="ns")
-        hsb.grid(row=1, column=0, sticky="ew")
+        v_scroll.grid(row=0, column=1, sticky="ns")
+        h_scroll.grid(row=1, column=0, sticky="ew")
 
-        tree_container.grid_rowconfigure(0, weight=1)
-        tree_container.grid_columnconfigure(0, weight=1)
+        parent.grid_rowconfigure(0, weight=1)
+        parent.grid_columnconfigure(0, weight=1)
 
-        # Duplo clique
+        # Bind duplo clique
         self.tree.bind('<Double-1>', lambda e: self.open_edit_form())
 
     def load_data(self):
-        """Carrega dados do banco"""
+        """Carrega dados - MESMA LÓGICA DO DASHBOARD"""
         for item in self.tree.get_children():
             self.tree.delete(item)
 
         query = """
-                SELECT p.Cod_pagamento, \
-                       mc.Modal_cobranca, \
-                       p.Precos_dinam, \
-                       pr.Desc_volume, \
-                       p.Metod_pagamento, \
-                       p.Reconc_financ
-                FROM Pagamentos p
-                         JOIN Modalidade_Cobranca mc ON p.Cod_modalidade = mc.Cod_modalidade
-                         LEFT JOIN Promocoes pr ON p.Cod_promocao = pr.Cod_promocao
-                ORDER BY p.Cod_pagamento DESC \
-                """
+        SELECT 
+            p.Cod_pagamento,
+            mc.Modal_cobranca,
+            p.Precos_dinam,
+            pr.Desc_volume,
+            p.Metod_pagamento,
+            p.Reconc_financ
+        FROM Pagamentos p
+        JOIN Modalidade_Cobranca mc ON p.Cod_modalidade = mc.Cod_modalidade
+        LEFT JOIN Promocoes pr ON p.Cod_promocao = pr.Cod_promocao
+        ORDER BY p.Cod_pagamento DESC
+        """
 
         result = self.db.execute_query(query)
 
@@ -237,83 +192,42 @@ class PagamentosCRUD:
                 modalidade = row[1]
                 valor = row[2]
                 desconto = row[3] if row[3] else 0
-
-                # Calcular valor final com desconto
                 valor_final = valor * (1 - desconto / 100)
-
                 metodo = row[4]
-                reconc = row[5][:30] if row[5] else "Pendente"
+                reconc = row[5]
 
+                # Determinar status pela reconciliação
+                status = "🟢 Concluído" if reconc and "concluído" in reconc.lower() else "🟡 Pendente"
+
+                # FORMATAÇÃO IDÊNTICA AO DASHBOARD
                 self.tree.insert('', 'end', values=(
                     cod,
                     modalidade,
-                    f"{valor:,.2f} MT",
+                    f"MT {valor:,.2f}",
                     f"{desconto}%",
-                    f"{valor_final:,.2f} MT",
+                    f"MT {valor_final:,.2f}",
                     metodo,
-                    reconc
+                    status
                 ))
 
-    def filter_data(self):
-        """Filtra dados"""
-        for item in self.tree.get_children():
-            self.tree.delete(item)
+        else:
+            messagebox.showinfo("Info", "Nenhum pagamento encontrado.")
 
-        search_text = self.search_var.get()
-        modal_filter = self.modal_filter.get()
-        metodo_filter = self.metodo_filter.get()
+    def clear_content(self):
+        """Limpa conteúdo - MESMA FUNÇÃO DO MAIN"""
+        for widget in self.parent.winfo_children():
+            widget.destroy()
 
-        if hasattr(self, 'all_data'):
-            for row in self.all_data:
-                cod = str(row[0])
-                modalidade = row[1]
-                metodo = row[4]
-
-                # Aplicar filtros
-                match_search = (not search_text or search_text in cod)
-                match_modal = (modal_filter == "Todas" or modal_filter == modalidade)
-                match_metodo = (metodo_filter == "Todos" or metodo_filter == metodo)
-
-                if match_search and match_modal and match_metodo:
-                    valor = row[2]
-                    desconto = row[3] if row[3] else 0
-                    valor_final = valor * (1 - desconto / 100)
-                    reconc = row[5][:30] if row[5] else "Pendente"
-
-                    self.tree.insert('', 'end', values=(
-                        row[0],
-                        modalidade,
-                        f"{valor:,.2f} MT",
-                        f"{desconto}%",
-                        f"{valor_final:,.2f} MT",
-                        metodo,
-                        reconc
-                    ))
-
-    def clear_filters(self):
-        """Limpa filtros"""
-        self.search_var.set("")
-        self.modal_filter.set("Todas")
-        self.metodo_filter.set("Todos")
-        self.load_data()
-
-    def get_modalidades_list(self):
-        """Retorna lista de modalidades"""
-        query = "SELECT Modal_cobranca FROM Modalidade_Cobranca ORDER BY Modal_cobranca"
-        result = self.db.execute_query(query)
-
-        modalidades = ["Todas"]
-        if result and result[1]:
-            modalidades.extend([row[0] for row in result[1]])
-
-        return modalidades
+    # =============================================================================
+    # FUNÇÕES ESPECÍFICAS DO CRUD (MANTIDAS COM MELHORIAS VISUAIS)
+    # =============================================================================
 
     def open_create_form(self):
-        """Formulário de criação"""
+        """Abre formulário para criar novo pagamento"""
         self.open_form(mode='create')
 
     def open_edit_form(self):
-        """Formulário de edição"""
+        """Abre formulário para editar pagamento selecionado"""
         selected = self.tree.selection()
         if not selected:
             messagebox.showwarning("Aviso", "Selecione um pagamento para editar.")
@@ -324,22 +238,24 @@ class PagamentosCRUD:
         self.open_form(mode='edit', cod_pag=cod_pag)
 
     def open_form(self, mode='create', cod_pag=None):
-        """Abre formulário"""
+        """Abre formulário (criar ou editar)"""
+        # Criar janela modal
         self.form_window = ctk.CTkToplevel(self.parent)
         self.form_window.title("Novo Pagamento" if mode == 'create' else "Editar Pagamento")
-        self.form_window.geometry("850x650")
+        self.form_window.geometry("800x650")
 
         # Centralizar
         self.form_window.update_idletasks()
-        x = (self.form_window.winfo_screenwidth() // 2) - (850 // 2)
+        x = (self.form_window.winfo_screenwidth() // 2) - (800 // 2)
         y = (self.form_window.winfo_screenheight() // 2) - (650 // 2)
-        self.form_window.geometry(f"850x650+{x}+{y}")
+        self.form_window.geometry(f"800x650+{x}+{y}")
 
+        # Tornar modal
         self.form_window.transient(self.parent)
         self.form_window.grab_set()
 
-        # Container
-        form_container = ctk.CTkScrollableFrame(self.form_window, fg_color="#2b2b2b")
+        # Container com scroll
+        form_container = ctk.CTkScrollableFrame(self.form_window, fg_color=COLORS['dark_bg'])
         form_container.pack(fill="both", expand=True, padx=20, pady=20)
 
         # Título
@@ -347,28 +263,30 @@ class PagamentosCRUD:
         title = ctk.CTkLabel(
             form_container,
             text=title_text,
-            font=("Helvetica", 20, "bold"),
-            text_color=self.COLORS['text']
+            font=("Arial", 20, "bold"),
+            text_color=COLORS['text_primary']
         )
         title.pack(pady=(0, 20))
 
         # Frame do formulário
-        form_frame = ctk.CTkFrame(form_container, fg_color=self.COLORS['dark'],
+        form_frame = ctk.CTkFrame(form_container, fg_color=COLORS['dark_card'],
                                   corner_radius=10)
         form_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
+        # Campos do formulário
         fields = {}
         row = 0
 
-        # Código (apenas visualização em edição)
+        # Código (apenas visualização em modo edição)
         if mode == 'edit':
-            self.create_field(form_frame, "Código:", row, fields, 'cod_pag',
-                              readonly=True, width=150)
+            self.create_form_field(form_frame, "Código:", row, readonly=True,
+                                   var_name='cod_pag', fields=fields)
             row += 1
 
         # Modalidade de Cobrança
         label = ctk.CTkLabel(form_frame, text="Modalidade Cobrança:*",
-                             font=("Helvetica", 12, "bold"))
+                             font=("Arial", 12, "bold"),
+                             text_color=COLORS['text_primary'])
         label.grid(row=row, column=0, padx=20, pady=10, sticky="w")
 
         fields['modalidade'] = ctk.CTkComboBox(
@@ -381,12 +299,14 @@ class PagamentosCRUD:
         row += 1
 
         # Preço Dinâmico
-        self.create_field(form_frame, "Valor (MT):*", row, fields, 'preco', width=200)
+        self.create_form_field(form_frame, "Valor (MT):*", row, width=200,
+                               var_name='preco', fields=fields)
         row += 1
 
         # Promoção
         label = ctk.CTkLabel(form_frame, text="Promoção:",
-                             font=("Helvetica", 12, "bold"))
+                             font=("Arial", 12, "bold"),
+                             text_color=COLORS['text_primary'])
         label.grid(row=row, column=0, padx=20, pady=10, sticky="w")
 
         fields['promocao'] = ctk.CTkComboBox(
@@ -401,22 +321,23 @@ class PagamentosCRUD:
 
         # Valor Final (calculado)
         label = ctk.CTkLabel(form_frame, text="Valor Final:",
-                             font=("Helvetica", 12, "bold"),
-                             text_color=self.COLORS['success'])
+                             font=("Arial", 12, "bold"),
+                             text_color=COLORS['success'])
         label.grid(row=row, column=0, padx=20, pady=10, sticky="w")
 
         fields['valor_final'] = ctk.CTkLabel(
             form_frame,
             text="0.00 MT",
-            font=("Helvetica", 16, "bold"),
-            text_color=self.COLORS['success']
+            font=("Arial", 16, "bold"),
+            text_color=COLORS['success']
         )
         fields['valor_final'].grid(row=row, column=1, padx=20, pady=10, sticky="w")
         row += 1
 
         # Método de Pagamento
         label = ctk.CTkLabel(form_frame, text="Método Pagamento:*",
-                             font=("Helvetica", 12, "bold"))
+                             font=("Arial", 12, "bold"),
+                             text_color=COLORS['text_primary'])
         label.grid(row=row, column=0, padx=20, pady=10, sticky="w")
 
         fields['metodo'] = ctk.CTkComboBox(
@@ -430,11 +351,13 @@ class PagamentosCRUD:
         row += 1
 
         # Comprovante de Veiculação
-        self.create_field(form_frame, "Comprovante:", row, fields, 'comprovante', width=400)
+        self.create_form_field(form_frame, "Comprovante:", row, width=400,
+                               var_name='comprovante', fields=fields)
         row += 1
 
         # Reconciliação Financeira
-        self.create_field(form_frame, "Reconciliação:", row, fields, 'reconciliacao', width=400)
+        self.create_form_field(form_frame, "Reconciliação:", row, width=400,
+                               var_name='reconciliacao', fields=fields)
         row += 1
 
         # Botões
@@ -445,8 +368,8 @@ class PagamentosCRUD:
             btn_frame,
             text="💾 Salvar",
             command=lambda: self.save_record(mode, fields, cod_pag),
-            font=("Helvetica", 14, "bold"),
-            fg_color=self.COLORS['success'],
+            font=("Arial", 14, "bold"),
+            fg_color=COLORS['success'],
             width=150,
             height=40
         )
@@ -456,14 +379,14 @@ class PagamentosCRUD:
             btn_frame,
             text="❌ Cancelar",
             command=self.form_window.destroy,
-            font=("Helvetica", 14, "bold"),
-            fg_color=self.COLORS['danger'],
+            font=("Arial", 14, "bold"),
+            fg_color=COLORS['danger'],
             width=150,
             height=40
         )
         cancel_btn.pack(side="left", padx=10)
 
-        # Carregar dados se edição
+        # Carregar dados se modo edição
         if mode == 'edit' and cod_pag:
             self.load_form_data(fields, cod_pag)
 
@@ -472,10 +395,12 @@ class PagamentosCRUD:
 
         self.form_fields = fields
 
-    def create_field(self, parent, label_text, row, fields, field_name,
-                     width=300, readonly=False):
-        """Cria campo"""
-        label = ctk.CTkLabel(parent, text=label_text, font=("Helvetica", 12, "bold"))
+    def create_form_field(self, parent, label_text, row, width=300, readonly=False,
+                          var_name=None, fields=None):
+        """Cria um campo de formulário"""
+        label = ctk.CTkLabel(parent, text=label_text,
+                            font=("Arial", 12, "bold"),
+                            text_color=COLORS['text_primary'])
         label.grid(row=row, column=0, padx=20, pady=10, sticky="w")
 
         entry = ctk.CTkEntry(parent, width=width, height=35)
@@ -484,10 +409,11 @@ class PagamentosCRUD:
         if readonly:
             entry.configure(state="disabled")
 
-        fields[field_name] = entry
+        if fields is not None and var_name:
+            fields[var_name] = entry
 
     def get_modalidades_for_combo(self):
-        """Retorna modalidades para combobox"""
+        """Retorna lista formatada de modalidades para combobox"""
         query = "SELECT Cod_modalidade, Modal_cobranca FROM Modalidade_Cobranca ORDER BY Modal_cobranca"
         result = self.db.execute_query(query)
 
@@ -527,29 +453,22 @@ class PagamentosCRUD:
                 desconto = float(desc_str)
 
             valor_final = preco * (1 - desconto / 100)
-            fields['valor_final'].configure(text=f"{valor_final:,.2f} MT")
+            fields['valor_final'].configure(text=f"MT {valor_final:,.2f}")
 
         except:
-            fields['valor_final'].configure(text="0.00 MT")
+            fields['valor_final'].configure(text="MT 0.00")
 
     def load_form_data(self, fields, cod_pag):
-        """Carrega dados no formulário"""
+        """Carrega dados no formulário para edição"""
         query = """
-                SELECT p.Cod_pagamento, \
-                       p.Cod_modalidade, \
-                       mc.Modal_cobranca, \
-                       p.Precos_dinam,
-                       p.Cod_promocao, \
-                       pr.Pacotes_promo, \
-                       pr.Desc_volume, \
-                       p.Metod_pagamento,
-                       p.Comprov_veic, \
-                       p.Reconc_financ
-                FROM Pagamentos p
-                         JOIN Modalidade_Cobranca mc ON p.Cod_modalidade = mc.Cod_modalidade
-                         LEFT JOIN Promocoes pr ON p.Cod_promocao = pr.Cod_promocao
-                WHERE p.Cod_pagamento = :cod \
-                """
+        SELECT p.Cod_pagamento, p.Cod_modalidade, mc.Modal_cobranca, p.Precos_dinam,
+               p.Cod_promocao, pr.Pacotes_promo, pr.Desc_volume, p.Metod_pagamento,
+               p.Comprov_veic, p.Reconc_financ
+        FROM Pagamentos p
+        JOIN Modalidade_Cobranca mc ON p.Cod_modalidade = mc.Cod_modalidade
+        LEFT JOIN Promocoes pr ON p.Cod_promocao = pr.Cod_promocao
+        WHERE p.Cod_pagamento = :cod
+        """
         result = self.db.execute_query(query, {'cod': cod_pag})
 
         if result and result[1]:
@@ -588,14 +507,15 @@ class PagamentosCRUD:
             self.update_final_value(fields)
 
     def save_record(self, mode, fields, cod_pag=None):
-        """Salva registro"""
+        """Salva registro (criar ou atualizar)"""
         try:
-            # Validar campos
+            # Validar campos obrigatórios
             modalidade = fields['modalidade'].get()
             if not modalidade or modalidade == "Nenhuma modalidade cadastrada":
                 messagebox.showerror("Erro", "Selecione uma modalidade.")
                 return
 
+            # Extrair ID da modalidade
             cod_modalidade = int(modalidade.split(' - ')[0])
 
             preco = fields['preco'].get().strip()
@@ -611,7 +531,7 @@ class PagamentosCRUD:
                 if preco < 0:
                     raise ValueError
             except:
-                messagebox.showerror("Erro", "Valor inválido.")
+                messagebox.showerror("Erro", "Valor inválido. Use apenas números.")
                 return
 
             # Promoção (opcional)
@@ -631,11 +551,11 @@ class PagamentosCRUD:
 
                 # Insert
                 query = """
-                        INSERT INTO Pagamentos
-                        (Cod_pagamento, Cod_modalidade, Precos_dinam, Cod_promocao,
-                         Metod_pagamento, Comprov_veic, Reconc_financ)
-                        VALUES (:cod, :modal, :preco, :promo, :metodo, :comprov, :reconc) \
-                        """
+                INSERT INTO Pagamentos
+                (Cod_pagamento, Cod_modalidade, Precos_dinam, Cod_promocao,
+                 Metod_pagamento, Comprov_veic, Reconc_financ)
+                VALUES (:cod, :modal, :preco, :promo, :metodo, :comprov, :reconc)
+                """
 
                 params = {
                     'cod': novo_cod,
@@ -656,15 +576,15 @@ class PagamentosCRUD:
 
             else:  # edit
                 query = """
-                        UPDATE Pagamentos
-                        SET Cod_modalidade  = :modal,
-                            Precos_dinam    = :preco,
-                            Cod_promocao    = :promo,
-                            Metod_pagamento = :metodo,
-                            Comprov_veic    = :comprov,
-                            Reconc_financ   = :reconc
-                        WHERE Cod_pagamento = :cod \
-                        """
+                UPDATE Pagamentos
+                SET Cod_modalidade = :modal,
+                    Precos_dinam = :preco,
+                    Cod_promocao = :promo,
+                    Metod_pagamento = :metodo,
+                    Comprov_veic = :comprov,
+                    Reconc_financ = :reconc
+                WHERE Cod_pagamento = :cod
+                """
 
                 params = {
                     'cod': cod_pag,
@@ -687,7 +607,7 @@ class PagamentosCRUD:
             messagebox.showerror("Erro", f"Erro ao salvar: {str(e)}")
 
     def delete_record(self):
-        """Exclui pagamento"""
+        """Exclui pagamento selecionado"""
         selected = self.tree.selection()
         if not selected:
             messagebox.showwarning("Aviso", "Selecione um pagamento para excluir.")
@@ -695,23 +615,6 @@ class PagamentosCRUD:
 
         item = self.tree.item(selected[0])
         cod_pag = item['values'][0]
-
-        # Verificar se está sendo usado em campanhas
-        query_camp = """
-                     SELECT COUNT(*) \
-                     FROM Campanha_Dados \
-                     WHERE Cod_pagamento = :cod \
-                     """
-        result_camp = self.db.execute_query(query_camp, {'cod': cod_pag})
-
-        if result_camp and result_camp[1] and result_camp[1][0][0] > 0:
-            num_campanhas = result_camp[1][0][0]
-            messagebox.showerror(
-                "Impossível Excluir",
-                f"Este pagamento está associado a {num_campanhas} campanha(s).\n\n"
-                "Remova as associações antes de excluir."
-            )
-            return
 
         confirm = messagebox.askyesno(
             "Confirmar Exclusão",
@@ -732,7 +635,7 @@ class PagamentosCRUD:
                 messagebox.showerror("Erro", f"Erro ao excluir: {str(e)}")
 
     def show_financial_report(self):
-        """Mostra relatório financeiro"""
+        """Mostra relatório financeiro - COM MESMA ESTÉTICA DO DASHBOARD"""
         # Criar janela
         report_window = ctk.CTkToplevel(self.parent)
         report_window.title("Relatório Financeiro")
@@ -745,19 +648,62 @@ class PagamentosCRUD:
         report_window.geometry(f"900x700+{x}+{y}")
 
         # Container
-        container = ctk.CTkScrollableFrame(report_window, fg_color="#2b2b2b")
+        container = ctk.CTkScrollableFrame(report_window, fg_color=COLORS['dark_bg'])
         container.pack(fill="both", expand=True, padx=20, pady=20)
 
-        # Título
+        # Título - MESMO ESTILO
         title = ctk.CTkLabel(
             container,
             text="💰 Relatório Financeiro Consolidado",
-            font=("Helvetica", 22, "bold"),
-            text_color=self.COLORS['primary']
+            font=("Arial", 22, "bold"),
+            text_color=COLORS['text_primary']
         )
         title.pack(pady=(0, 30))
 
         # Buscar estatísticas
+        stats_data = self._get_financial_stats()
+
+        # Cards resumo - MESMO ESTILO DO DASHBOARD
+        stats_frame = ctk.CTkFrame(container, fg_color="transparent")
+        stats_frame.pack(fill="x", pady=(0, 30))
+
+        cards_info = [
+            ("💳", "Total Pagamentos", str(stats_data['total_pagamentos']), COLORS['primary']),
+            ("💰", "Receita Total", f"MT {stats_data['receita_total']:,.2f}", COLORS['success']),
+            ("🎁", "Descontos", f"MT {stats_data['total_descontos']:,.2f}", COLORS['warning']),
+            ("✅", "Receita Líquida", f"MT {stats_data['receita_liquida']:,.2f}", COLORS['accent'])
+        ]
+
+        for i, (icon, title_text, value, color) in enumerate(cards_info):
+            card = self.create_stat_card(stats_frame, title_text, value, icon, color, width=200, height=110)
+            card.grid(row=0, column=i, padx=10, pady=5, sticky="nsew")
+            stats_frame.grid_columnconfigure(i, weight=1)
+
+        # Tabelas de detalhes
+        if stats_data['por_modalidade']:
+            self._create_detailed_table(container, "📊 Receita por Modalidade",
+                                      stats_data['por_modalidade'],
+                                      ['Modalidade', 'Quantidade', 'Valor Total', 'Percentual'])
+
+        if stats_data['por_metodo']:
+            self._create_detailed_table(container, "💳 Receita por Método",
+                                      stats_data['por_metodo'],
+                                      ['Método', 'Quantidade', 'Valor Total', 'Percentual'])
+
+        # Botão fechar
+        close_btn = ctk.CTkButton(
+            container,
+            text="✖️ Fechar",
+            command=report_window.destroy,
+            font=("Arial", 14, "bold"),
+            fg_color=COLORS['secondary'],
+            width=150,
+            height=40
+        )
+        close_btn.pack(pady=30)
+
+    def _get_financial_stats(self):
+        """Busca estatísticas financeiras"""
         # Total de pagamentos
         query_total = "SELECT COUNT(*), SUM(Precos_dinam) FROM Pagamentos"
         result_total = self.db.execute_query(query_total)
@@ -770,170 +716,125 @@ class PagamentosCRUD:
 
         # Por modalidade
         query_modal = """
-                      SELECT mc.Modal_cobranca, COUNT(*), SUM(p.Precos_dinam)
-                      FROM Pagamentos p
-                               JOIN Modalidade_Cobranca mc ON p.Cod_modalidade = mc.Cod_modalidade
-                      GROUP BY mc.Modal_cobranca
-                      ORDER BY SUM(p.Precos_dinam) DESC \
-                      """
+        SELECT mc.Modal_cobranca, COUNT(*), SUM(p.Precos_dinam)
+        FROM Pagamentos p
+        JOIN Modalidade_Cobranca mc ON p.Cod_modalidade = mc.Cod_modalidade
+        GROUP BY mc.Modal_cobranca
+        ORDER BY SUM(p.Precos_dinam) DESC
+        """
         result_modal = self.db.execute_query(query_modal)
 
         # Por método
         query_metodo = """
-                       SELECT Metod_pagamento, COUNT(*), SUM(Precos_dinam)
-                       FROM Pagamentos
-                       GROUP BY Metod_pagamento
-                       ORDER BY SUM(Precos_dinam) DESC \
-                       """
+        SELECT Metod_pagamento, COUNT(*), SUM(Precos_dinam)
+        FROM Pagamentos
+        GROUP BY Metod_pagamento
+        ORDER BY SUM(Precos_dinam) DESC
+        """
         result_metodo = self.db.execute_query(query_metodo)
 
         # Descontos totais
         query_desc = """
-                     SELECT SUM(p.Precos_dinam * pr.Desc_volume / 100)
-                     FROM Pagamentos p
-                              JOIN Promocoes pr ON p.Cod_promocao = pr.Cod_promocao
-                     WHERE p.Cod_promocao IS NOT NULL \
-                     """
+        SELECT SUM(p.Precos_dinam * pr.Desc_volume / 100)
+        FROM Pagamentos p
+        JOIN Promocoes pr ON p.Cod_promocao = pr.Cod_promocao
+        WHERE p.Cod_promocao IS NOT NULL
+        """
         result_desc = self.db.execute_query(query_desc)
         total_desconto = result_desc[1][0][0] if result_desc and result_desc[1] and result_desc[1][0][0] else 0
 
-        # Cards resumo
-        cards_frame = ctk.CTkFrame(container, fg_color="transparent")
-        cards_frame.pack(fill="x", pady=20)
+        return {
+            'total_pagamentos': total_pag,
+            'receita_total': total_valor,
+            'total_descontos': total_desconto,
+            'receita_liquida': total_valor - total_desconto,
+            'por_modalidade': result_modal[1] if result_modal and result_modal[1] else [],
+            'por_metodo': result_metodo[1] if result_metodo and result_metodo[1] else []
+        }
 
-        cards_data = [
-            ("💳 Total Pagamentos", str(total_pag), self.COLORS['primary']),
-            ("💰 Receita Total", f"{total_valor:,.2f} MT", self.COLORS['success']),
-            ("🎁 Descontos", f"{total_desconto:,.2f} MT", self.COLORS['secondary']),
-            ("✅ Receita Líquida", f"{(total_valor - total_desconto):,.2f} MT", self.COLORS['accent'])
-        ]
+    def _create_detailed_table(self, parent, title, data, columns):
+        """Cria tabela detalhada no relatório"""
+        frame = ctk.CTkFrame(parent, fg_color=COLORS['dark_card'], corner_radius=12)
+        frame.pack(fill="x", pady=15)
 
-        for i, (title_text, value, color) in enumerate(cards_data):
-            card = self.create_stat_card(cards_frame, title_text, value, color)
-            card.grid(row=0, column=i, padx=10, pady=10, sticky="ew")
-            cards_frame.grid_columnconfigure(i, weight=1)
-
-        # Por Modalidade
-        if result_modal and result_modal[1]:
-            modal_frame = ctk.CTkFrame(container, fg_color=self.COLORS['dark'])
-            modal_frame.pack(fill="x", pady=15)
-
-            modal_title = ctk.CTkLabel(
-                modal_frame,
-                text="📊 Receita por Modalidade de Cobrança",
-                font=("Helvetica", 16, "bold"),
-                text_color=self.COLORS['text']
-            )
-            modal_title.pack(pady=15)
-
-            # Tabela
-            tree_frame = ctk.CTkFrame(modal_frame, fg_color="transparent")
-            tree_frame.pack(fill="x", padx=20, pady=(0, 20))
-
-            columns = ('Modalidade', 'Quantidade', 'Valor Total', 'Percentual')
-            tree = ttk.Treeview(tree_frame, columns=columns, show='headings', height=5)
-
-            for col in columns:
-                tree.heading(col, text=col)
-                tree.column(col, width=200, anchor="center")
-
-            for row in result_modal[1]:
-                modalidade = row[0]
-                qtd = row[1]
-                valor = row[2]
-                percentual = (valor / total_valor * 100) if total_valor > 0 else 0
-
-                tree.insert('', 'end', values=(
-                    modalidade,
-                    qtd,
-                    f"{valor:,.2f} MT",
-                    f"{percentual:.1f}%"
-                ))
-
-            tree.pack(fill="x")
-
-        # Por Método
-        if result_metodo and result_metodo[1]:
-            metodo_frame = ctk.CTkFrame(container, fg_color=self.COLORS['dark'])
-            metodo_frame.pack(fill="x", pady=15)
-
-            metodo_title = ctk.CTkLabel(
-                metodo_frame,
-                text="💳 Receita por Método de Pagamento",
-                font=("Helvetica", 16, "bold"),
-                text_color=self.COLORS['text']
-            )
-            metodo_title.pack(pady=15)
-
-            # Tabela
-            tree_frame = ctk.CTkFrame(metodo_frame, fg_color="transparent")
-            tree_frame.pack(fill="x", padx=20, pady=(0, 20))
-
-            columns = ('Método', 'Quantidade', 'Valor Total', 'Percentual')
-            tree = ttk.Treeview(tree_frame, columns=columns, show='headings', height=5)
-
-            for col in columns:
-                tree.heading(col, text=col)
-                tree.column(col, width=200, anchor="center")
-
-            for row in result_metodo[1]:
-                metodo = row[0]
-                qtd = row[1]
-                valor = row[2]
-                percentual = (valor / total_valor * 100) if total_valor > 0 else 0
-
-                tree.insert('', 'end', values=(
-                    metodo,
-                    qtd,
-                    f"{valor:,.2f} MT",
-                    f"{percentual:.1f}%"
-                ))
-
-            tree.pack(fill="x")
-
-        # Botão fechar
-        close_btn = ctk.CTkButton(
-            container,
-            text="✖️ Fechar",
-            command=report_window.destroy,
-            font=("Helvetica", 14, "bold"),
-            fg_color=self.COLORS['secondary'],
-            width=150,
-            height=40
-        )
-        close_btn.pack(pady=30)
-
-    def create_stat_card(self, parent, title, value, color):
-        """Cria card de estatística"""
-        card = ctk.CTkFrame(parent, fg_color=color, corner_radius=10, height=110)
-        card.grid_propagate(False)
-
+        # Título
         title_label = ctk.CTkLabel(
-            card,
+            frame,
             text=title,
-            font=("Helvetica", 13),
-            text_color=self.COLORS['text']
+            font=("Arial", 16, "bold"),
+            text_color=COLORS['text_primary']
         )
-        title_label.pack(pady=(15, 5))
+        title_label.pack(pady=15)
 
-        value_label = ctk.CTkLabel(
-            card,
-            text=str(value),
-            font=("Helvetica", 20, "bold"),
-            text_color=self.COLORS['text']
-        )
-        value_label.pack()
+        # Tabela
+        table_container = ctk.CTkFrame(frame, fg_color="transparent")
+        table_container.pack(fill="x", padx=20, pady=(0, 20))
+
+        # Criar treeview
+        style = ttk.Style()
+        style.theme_use("clam")
+        style.configure("Report.Treeview",
+                        background=COLORS['dark_card'],
+                        foreground=COLORS['text_primary'],
+                        fieldbackground=COLORS['dark_card'],
+                        rowheight=30)
+        style.configure("Report.Treeview.Heading",
+                        background=COLORS['primary'],
+                        foreground=COLORS['text_primary'],
+                        font=("Arial", 10, "bold"))
+
+        tree = ttk.Treeview(table_container, columns=columns, show='headings',
+                           height=min(6, len(data)), style="Report.Treeview")
+
+        for col in columns:
+            tree.heading(col, text=col)
+            tree.column(col, width=150, anchor="center")
+
+        # Adicionar dados
+        total_valor = sum(row[2] for row in data) if data else 0
+        for row in data:
+            percentual = (row[2] / total_valor * 100) if total_valor > 0 else 0
+            tree.insert('', 'end', values=(
+                row[0],
+                row[1],
+                f"MT {row[2]:,.2f}",
+                f"{percentual:.1f}%"
+            ))
+
+        tree.pack(fill="x")
+
+    def create_stat_card(self, parent, title, value, icon, color, **kwargs):
+        """Cria card de estatística NO ESTILO DO DASHBOARD"""
+        card = ctk.CTkFrame(parent, fg_color=COLORS['dark_card'], corner_radius=12,
+                           border_width=1, border_color=COLORS['dark_border'], **kwargs)
+        card.grid_columnconfigure(0, weight=1)
+
+        # Ícone e título
+        icon_frame = ctk.CTkFrame(card, fg_color="transparent")
+        icon_frame.grid(row=0, column=0, sticky="w", padx=15, pady=(15, 5))
+
+        ctk.CTkLabel(icon_frame, text=icon, font=("Arial", 20), text_color=color).pack(side="left", padx=(0, 10))
+        ctk.CTkLabel(icon_frame, text=title, font=("Arial", 12), text_color=COLORS['text_secondary']).pack(side="left")
+
+        # Valor
+        value_label = ctk.CTkLabel(card, text=value, font=("Arial", 20, "bold"),
+                                 text_color=COLORS['text_primary'])
+        value_label.grid(row=1, column=0, sticky="w", padx=15, pady=(0, 15))
 
         return card
 
     def darken_color(self, color):
-        """Escurece cor"""
+        """Escurece uma cor hexadecimal"""
         color = color.lstrip('#')
         rgb = tuple(int(color[i:i + 2], 16) for i in (0, 2, 4))
         darker_rgb = tuple(max(0, c - 30) for c in rgb)
         return '#%02x%02x%02x' % darker_rgb
 
 
+# ═════════════════════════════════════════════════════════════════════════════
+# FUNÇÃO PARA INTEGRAR NO MAIN APP
+# ═════════════════════════════════════════════════════════════════════════════
+
 def show_pagamentos_module(parent, db, main_app):
-    """Função de integração"""
+    """Função para chamar no menu principal"""
     PagamentosCRUD(parent, db, main_app)

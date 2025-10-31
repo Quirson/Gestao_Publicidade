@@ -1,6 +1,6 @@
 """
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║  MÓDULO CRUD CAMPANHAS - GESTÃO COMPLETA                                    ║
+║  MÓDULO CRUD CAMPANHAS - MESMA INTERFACE DO DASHBOARD                        ║
 ║  Sistema de Gestão de Publicidade e Marketing                               ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 """
@@ -11,6 +11,27 @@ from datetime import datetime
 from tkcalendar import DateEntry
 import re
 
+# Cores padronizadas do main.py
+COLORS = {
+    'primary': '#1a237e',
+    'primary_light': '#534bae',
+    'primary_dark': '#000051',
+    'secondary': '#d32f2f',
+    'secondary_light': '#ff6659',
+    'secondary_dark': '#9a0007',
+    'accent': '#2979ff',
+    'success': '#00c853',
+    'warning': '#ffab00',
+    'danger': '#ff1744',
+    'info': '#00b8d4',
+    'dark_bg': '#0d1117',
+    'dark_surface': '#161b22',
+    'dark_card': '#21262d',
+    'dark_border': '#30363d',
+    'text_primary': '#f0f6fc',
+    'text_secondary': '#8b949e',
+    'text_disabled': '#484f58'
+}
 
 class CampanhasCRUD:
     def __init__(self, parent, db, main_app):
@@ -19,56 +40,50 @@ class CampanhasCRUD:
         self.main_app = main_app
         self.selected_item = None
 
-        # Cores
-        self.COLORS = {
-            'primary': '#1f538d',
-            'secondary': '#c41e3a',
-            'accent': '#2d5aa6',
-            'success': '#28a745',
-            'danger': '#dc3545',
-            'dark': '#1a1a1a',
-            'text': '#ffffff',
-            'text_secondary': '#b0b0b0'
-        }
-
         self.create_interface()
         self.load_data()
 
     def create_interface(self):
-        """Cria a interface completa do CRUD"""
-        # Container principal com scroll
-        self.main_container = ctk.CTkScrollableFrame(self.parent, fg_color="transparent")
-        self.main_container.pack(fill="both", expand=True, padx=20, pady=20)
+        """Cria interface IDÊNTICA ao Dashboard"""
+        self.clear_content()
 
-        # Barra de ferramentas
-        self.create_toolbar()
+        # Container principal - MESMO LAYOUT DO DASHBOARD
+        container = ctk.CTkFrame(self.parent, fg_color=COLORS['dark_bg'])
+        container.pack(fill="both", expand=True, padx=20, pady=20)
 
-        # Área de busca e filtros
-        self.create_search_area()
+        # Título - MESMO ESTILO DO DASHBOARD
+        title_frame = ctk.CTkFrame(container, fg_color="transparent")
+        title_frame.pack(fill="x", pady=(0, 25))
 
-        # Tabela de dados
-        self.create_table()
+        ctk.CTkLabel(
+            title_frame,
+            text="📢 Gestão de Campanhas",
+            font=("Arial", 22, "bold"),
+            text_color=COLORS['text_primary']
+        ).pack(side="left")
 
-        # Painel de formulário (inicialmente oculto)
-        self.form_panel = None
+        # Barra de ferramentas - MESMO ESTILO
+        self.create_toolbar(container)
 
-    def create_toolbar(self):
-        """Cria a barra de ferramentas com botões de ação"""
-        toolbar = ctk.CTkFrame(self.main_container, fg_color=self.COLORS['dark'],
-                               corner_radius=10, height=80)
+        # Tabela - MESMO LAYOUT E DIMENSÕES DO DASHBOARD
+        self.create_campaigns_table(container)
+
+    def create_toolbar(self, parent):
+        """Barra de ferramentas igual ao Dashboard"""
+        toolbar = ctk.CTkFrame(parent, fg_color=COLORS['dark_card'],
+                              corner_radius=10, height=70)
         toolbar.pack(fill="x", pady=(0, 20))
         toolbar.pack_propagate(False)
 
-        # Frame interno para centralizar botões
         btn_frame = ctk.CTkFrame(toolbar, fg_color="transparent")
-        btn_frame.pack(pady=15, padx=20)
+        btn_frame.pack(expand=True, padx=20, pady=12)
 
         buttons = [
-            ("➕ Nova Campanha", self.open_create_form, self.COLORS['success']),
-            ("✏️ Editar", self.open_edit_form, self.COLORS['primary']),
-            ("🗑️ Excluir", self.delete_record, self.COLORS['danger']),
-            ("🔄 Atualizar", self.load_data, self.COLORS['accent']),
-            ("📊 Detalhes", self.show_details, self.COLORS['secondary'])
+            ("➕ Nova Campanha", self.open_create_form, COLORS['success']),
+            ("✏️ Editar", self.open_edit_form, COLORS['primary']),
+            ("🗑️ Excluir", self.delete_record, COLORS['danger']),
+            ("🔄 Atualizar", self.load_data, COLORS['accent']),
+            ("📊 Detalhes", self.show_details, COLORS['info'])
         ]
 
         for text, command, color in buttons:
@@ -76,163 +91,84 @@ class CampanhasCRUD:
                 btn_frame,
                 text=text,
                 command=command,
-                font=("Helvetica", 13, "bold"),
+                font=("Arial", 12, "bold"),
                 fg_color=color,
                 hover_color=self.darken_color(color),
-                width=150,
-                height=40,
+                width=140,
+                height=38,
                 corner_radius=8
             )
-            btn.pack(side="left", padx=5)
+            btn.pack(side="left", padx=8)
 
-    def create_search_area(self):
-        """Cria área de busca e filtros"""
-        search_frame = ctk.CTkFrame(self.main_container, fg_color=self.COLORS['dark'],
-                                    corner_radius=10)
-        search_frame.pack(fill="x", pady=(0, 20))
+    def create_campaigns_table(self, parent):
+        """Tabela COM MESMO LAYOUT E DIMENSÕES do Dashboard"""
+        table_frame = ctk.CTkFrame(parent, fg_color=COLORS['dark_card'], corner_radius=12)
+        table_frame.pack(fill="both", expand=True, pady=10)
 
-        # Título
-        title = ctk.CTkLabel(
-            search_frame,
-            text="🔍 Buscar e Filtrar",
-            font=("Helvetica", 14, "bold"),
-            text_color=self.COLORS['text']
-        )
-        title.pack(pady=10, padx=20, anchor="w")
+        # Cabeçalho - MESMO ESTILO
+        header_frame = ctk.CTkFrame(table_frame, fg_color="transparent")
+        header_frame.pack(fill="x", padx=20, pady=15)
 
-        # Frame de filtros
-        filter_frame = ctk.CTkFrame(search_frame, fg_color="transparent")
-        filter_frame.pack(fill="x", padx=20, pady=(0, 15))
-
-        # Campo de busca
-        search_label = ctk.CTkLabel(
-            filter_frame,
-            text="Buscar:",
-            font=("Helvetica", 12),
-            text_color=self.COLORS['text']
-        )
-        search_label.grid(row=0, column=0, padx=(0, 10), pady=5, sticky="w")
-
-        self.search_var = ctk.StringVar()
-        self.search_entry = ctk.CTkEntry(
-            filter_frame,
-            textvariable=self.search_var,
-            placeholder_text="Digite título ou código da campanha...",
-            width=300,
-            height=35
-        )
-        self.search_entry.grid(row=0, column=1, padx=5, pady=5, sticky="w")
-        self.search_var.trace('w', lambda *args: self.filter_data())
-
-        # Filtro por anunciante
-        anunciante_label = ctk.CTkLabel(
-            filter_frame,
-            text="Anunciante:",
-            font=("Helvetica", 12),
-            text_color=self.COLORS['text']
-        )
-        anunciante_label.grid(row=0, column=2, padx=(20, 10), pady=5, sticky="w")
-
-        self.anunciante_filter = ctk.CTkComboBox(
-            filter_frame,
-            values=self.get_anunciantes_list(),
-            width=200,
-            height=35,
-            command=lambda x: self.filter_data()
-        )
-        self.anunciante_filter.grid(row=0, column=3, padx=5, pady=5, sticky="w")
-        self.anunciante_filter.set("Todos")
-
-        # Botão limpar filtros
-        clear_btn = ctk.CTkButton(
-            filter_frame,
-            text="🗑️ Limpar",
-            command=self.clear_filters,
-            width=100,
-            height=35,
-            fg_color=self.COLORS['secondary']
-        )
-        clear_btn.grid(row=0, column=4, padx=(20, 0), pady=5)
-
-    def create_table(self):
-        """Cria a tabela de dados"""
-        table_frame = ctk.CTkFrame(self.main_container, fg_color=self.COLORS['dark'],
-                                   corner_radius=10)
-        table_frame.pack(fill="both", expand=True)
-
-        # Título
-        title = ctk.CTkLabel(
-            table_frame,
+        ctk.CTkLabel(
+            header_frame,
             text="📋 Lista de Campanhas",
-            font=("Helvetica", 14, "bold"),
-            text_color=self.COLORS['text']
-        )
-        title.pack(pady=10, padx=20, anchor="w")
+            font=("Arial", 18, "bold"),
+            text_color=COLORS['text_primary']
+        ).pack(side="left")
 
-        # Container para tabela com scrollbar
-        tree_container = ctk.CTkFrame(table_frame, fg_color="transparent")
-        tree_container.pack(fill="both", expand=True, padx=20, pady=(0, 20))
+        # Container da tabela - MESMAS DIMENSÕES
+        table_container = ctk.CTkFrame(table_frame, fg_color="transparent")
+        table_container.pack(fill="both", expand=True, padx=20, pady=(0, 20))
 
-        # Estilo da tabela
+        # Treeview - MESMO ESTILO EXATO
+        self.create_treeview(table_container)
+
+    def create_treeview(self, parent):
+        """Cria treeview IDÊNTICO ao do Dashboard"""
         style = ttk.Style()
         style.theme_use("clam")
         style.configure("Treeview",
-                        background=self.COLORS['dark'],
-                        foreground=self.COLORS['text'],
-                        fieldbackground=self.COLORS['dark'],
-                        borderwidth=0,
-                        rowheight=30)
+                        background=COLORS['dark_card'],
+                        foreground=COLORS['text_primary'],
+                        fieldbackground=COLORS['dark_card'],
+                        rowheight=35)
         style.configure("Treeview.Heading",
-                        background=self.COLORS['primary'],
-                        foreground=self.COLORS['text'],
-                        borderwidth=0,
-                        font=("Helvetica", 11, "bold"))
-        style.map("Treeview",
-                  background=[('selected', self.COLORS['accent'])],
-                  foreground=[('selected', self.COLORS['text'])])
+                        background=COLORS['primary'],
+                        foreground=COLORS['text_primary'],
+                        font=("Arial", 11, "bold"))
+        style.map("Treeview", background=[('selected', COLORS['accent'])])
 
-        # Scrollbars
-        vsb = ttk.Scrollbar(tree_container, orient="vertical")
-        hsb = ttk.Scrollbar(tree_container, orient="horizontal")
+        # COLUNAS COM MESMAS LARGURAS DO DASHBOARD
+        columns = ('Código', 'Campanha', 'Anunciante', 'Orçamento', 'Início', 'Término', 'Status')
+        self.tree = ttk.Treeview(parent, columns=columns, show='headings', height=12)  # MESMA ALTURA
 
-        # Treeview
-        columns = ('Código', 'Título', 'Anunciante', 'Orçamento', 'Data Início',
-                   'Data Término', 'Status')
-        self.tree = ttk.Treeview(
-            tree_container,
-            columns=columns,
-            show='headings',
-            yscrollcommand=vsb.set,
-            xscrollcommand=hsb.set
-        )
-
-        vsb.config(command=self.tree.yview)
-        hsb.config(command=self.tree.xview)
-
-        # Configurar colunas
-        widths = [100, 200, 180, 120, 100, 100, 100]
+        # MESMAS LARGURAS DE COLUNA
+        widths = [80, 200, 150, 120, 100, 100, 100]
         for col, width in zip(columns, widths):
             self.tree.heading(col, text=col)
             self.tree.column(col, width=width, anchor="center")
 
-        # Layout
-        self.tree.grid(row=0, column=0, sticky="nsew")
-        vsb.grid(row=0, column=1, sticky="ns")
-        hsb.grid(row=1, column=0, sticky="ew")
+        # SCROLLBARS - MESMO POSICIONAMENTO
+        v_scroll = ttk.Scrollbar(parent, orient="vertical", command=self.tree.yview)
+        h_scroll = ttk.Scrollbar(parent, orient="horizontal", command=self.tree.xview)
+        self.tree.configure(yscrollcommand=v_scroll.set, xscrollcommand=h_scroll.set)
 
-        tree_container.grid_rowconfigure(0, weight=1)
-        tree_container.grid_columnconfigure(0, weight=1)
+        # LAYOUT IDÊNTICO - MESMO grid()
+        self.tree.grid(row=0, column=0, sticky="nsew")
+        v_scroll.grid(row=0, column=1, sticky="ns")
+        h_scroll.grid(row=1, column=0, sticky="ew")
+
+        parent.grid_rowconfigure(0, weight=1)
+        parent.grid_columnconfigure(0, weight=1)
 
         # Bind duplo clique
         self.tree.bind('<Double-1>', lambda e: self.open_edit_form())
 
     def load_data(self):
-        """Carrega dados do banco"""
-        # Limpar tabela
+        """Carrega dados - MESMA LÓGICA DO DASHBOARD"""
         for item in self.tree.get_children():
             self.tree.delete(item)
 
-        # Query
         query = """
         SELECT 
             c.Cod_camp,
@@ -254,78 +190,39 @@ class CampanhasCRUD:
         result = self.db.execute_query(query)
 
         if result and result[1]:
-            self.all_data = result[1]  # Armazenar para filtros
+            self.all_data = result[1]
             for row in result[1]:
-                # Formatar dados
+                # FORMATAÇÃO IDÊNTICA AO DASHBOARD
                 cod = row[0]
                 titulo = row[1]
-                anunciante = row[2][:25]
-                orcamento = f"{row[3]:,.2f} MT"
+                anunciante = row[2]
+                orcamento = f"MT {row[3]:,.0f}"  # MESMA FORMATAÇÃO
                 data_inicio = row[4].strftime('%d/%m/%Y') if row[4] else ''
                 data_termino = row[5].strftime('%d/%m/%Y') if row[5] else ''
                 status = row[6]
 
-                # Tag de cor baseada no status
+                # MESMAS CORES DE STATUS
                 tag = status.lower()
                 self.tree.insert('', 'end', values=(
                     cod, titulo, anunciante, orcamento,
                     data_inicio, data_termino, status
                 ), tags=(tag,))
 
-            # Configurar cores das tags
+            # CONFIGURAR CORES - MESMAS DO DASHBOARD
             self.tree.tag_configure('ativa', foreground='#28a745')
             self.tree.tag_configure('agendada', foreground='#ffc107')
             self.tree.tag_configure('finalizada', foreground='#dc3545')
         else:
             messagebox.showinfo("Info", "Nenhuma campanha encontrada.")
 
-    def filter_data(self):
-        """Filtra dados na tabela"""
-        # Limpar tabela
-        for item in self.tree.get_children():
-            self.tree.delete(item)
+    def clear_content(self):
+        """Limpa conteúdo - MESMA FUNÇÃO DO MAIN"""
+        for widget in self.parent.winfo_children():
+            widget.destroy()
 
-        search_text = self.search_var.get().lower()
-        anunciante_filter = self.anunciante_filter.get()
-
-        if hasattr(self, 'all_data'):
-            for row in self.all_data:
-                titulo = str(row[1]).lower()
-                cod = str(row[0])
-                anunciante = str(row[2])
-
-                # Aplicar filtros
-                match_search = (search_text in titulo or search_text in cod)
-                match_anunciante = (anunciante_filter == "Todos" or
-                                    anunciante_filter in anunciante)
-
-                if match_search and match_anunciante:
-                    status = row[6]
-                    tag = status.lower()
-                    self.tree.insert('', 'end', values=(
-                        row[0], row[1], row[2][:25],
-                        f"{row[3]:,.2f} MT",
-                        row[4].strftime('%d/%m/%Y') if row[4] else '',
-                        row[5].strftime('%d/%m/%Y') if row[5] else '',
-                        status
-                    ), tags=(tag,))
-
-    def clear_filters(self):
-        """Limpa todos os filtros"""
-        self.search_var.set("")
-        self.anunciante_filter.set("Todos")
-        self.load_data()
-
-    def get_anunciantes_list(self):
-        """Retorna lista de anunciantes"""
-        query = "SELECT Nome_razao_soc FROM Anunciante_Dados ORDER BY Nome_razao_soc"
-        result = self.db.execute_query(query)
-
-        anunciantes = ["Todos"]
-        if result and result[1]:
-            anunciantes.extend([row[0] for row in result[1]])
-
-        return anunciantes
+    # =============================================================================
+    # FUNÇÕES ESPECÍFICAS DO CRUD (MANTIDAS)
+    # =============================================================================
 
     def open_create_form(self):
         """Abre formulário para criar nova campanha"""
@@ -360,7 +257,7 @@ class CampanhasCRUD:
         self.form_window.grab_set()
 
         # Container com scroll
-        form_container = ctk.CTkScrollableFrame(self.form_window, fg_color="#2b2b2b")
+        form_container = ctk.CTkScrollableFrame(self.form_window, fg_color=COLORS['dark_bg'])
         form_container.pack(fill="both", expand=True, padx=20, pady=20)
 
         # Título
@@ -368,13 +265,13 @@ class CampanhasCRUD:
         title = ctk.CTkLabel(
             form_container,
             text=title_text,
-            font=("Helvetica", 20, "bold"),
-            text_color=self.COLORS['text']
+            font=("Arial", 20, "bold"),
+            text_color=COLORS['text_primary']
         )
         title.pack(pady=(0, 20))
 
         # Frame do formulário
-        form_frame = ctk.CTkFrame(form_container, fg_color=self.COLORS['dark'],
+        form_frame = ctk.CTkFrame(form_container, fg_color=COLORS['dark_card'],
                                   corner_radius=10)
         form_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
@@ -390,7 +287,8 @@ class CampanhasCRUD:
 
         # Anunciante
         label = ctk.CTkLabel(form_frame, text="Anunciante:*",
-                             font=("Helvetica", 12, "bold"))
+                             font=("Arial", 12, "bold"),
+                             text_color=COLORS['text_primary'])
         label.grid(row=row, column=0, padx=20, pady=10, sticky="w")
 
         fields['anunciante'] = ctk.CTkComboBox(
@@ -409,7 +307,8 @@ class CampanhasCRUD:
 
         # Objetivo (Text area)
         label = ctk.CTkLabel(form_frame, text="Objetivo:*",
-                             font=("Helvetica", 12, "bold"))
+                             font=("Arial", 12, "bold"),
+                             text_color=COLORS['text_primary'])
         label.grid(row=row, column=0, padx=20, pady=10, sticky="nw")
 
         fields['objectivo'] = ctk.CTkTextbox(form_frame, width=500, height=100)
@@ -428,7 +327,8 @@ class CampanhasCRUD:
 
         # Datas
         label = ctk.CTkLabel(form_frame, text="Data Início:*",
-                             font=("Helvetica", 12, "bold"))
+                             font=("Arial", 12, "bold"),
+                             text_color=COLORS['text_primary'])
         label.grid(row=row, column=0, padx=20, pady=10, sticky="w")
 
         fields['data_inicio'] = DateEntry(form_frame, width=25, background='darkblue',
@@ -438,7 +338,8 @@ class CampanhasCRUD:
         row += 1
 
         label = ctk.CTkLabel(form_frame, text="Data Término:*",
-                             font=("Helvetica", 12, "bold"))
+                             font=("Arial", 12, "bold"),
+                             text_color=COLORS['text_primary'])
         label.grid(row=row, column=0, padx=20, pady=10, sticky="w")
 
         fields['data_termino'] = DateEntry(form_frame, width=25, background='darkblue',
@@ -455,8 +356,8 @@ class CampanhasCRUD:
             btn_frame,
             text="💾 Salvar",
             command=lambda: self.save_record(mode, fields, cod_camp),
-            font=("Helvetica", 14, "bold"),
-            fg_color=self.COLORS['success'],
+            font=("Arial", 14, "bold"),
+            fg_color=COLORS['success'],
             width=150,
             height=40
         )
@@ -466,8 +367,8 @@ class CampanhasCRUD:
             btn_frame,
             text="❌ Cancelar",
             command=self.form_window.destroy,
-            font=("Helvetica", 14, "bold"),
-            fg_color=self.COLORS['danger'],
+            font=("Arial", 14, "bold"),
+            fg_color=COLORS['danger'],
             width=150,
             height=40
         )
@@ -482,7 +383,9 @@ class CampanhasCRUD:
     def create_form_field(self, parent, label_text, row, width=300, readonly=False,
                           var_name=None, fields=None):
         """Cria um campo de formulário"""
-        label = ctk.CTkLabel(parent, text=label_text, font=("Helvetica", 12, "bold"))
+        label = ctk.CTkLabel(parent, text=label_text,
+                            font=("Arial", 12, "bold"),
+                            text_color=COLORS['text_primary'])
         label.grid(row=row, column=0, padx=20, pady=10, sticky="w")
 
         entry = ctk.CTkEntry(parent, width=width, height=35)
@@ -772,30 +675,30 @@ class CampanhasCRUD:
         details_window.geometry(f"800x600+{x}+{y}")
 
         # Container com scroll
-        container = ctk.CTkScrollableFrame(details_window, fg_color="#2b2b2b")
+        container = ctk.CTkScrollableFrame(details_window, fg_color=COLORS['dark_bg'])
         container.pack(fill="both", expand=True, padx=20, pady=20)
 
         # Título
         title = ctk.CTkLabel(
             container,
             text=f"📊 {data[1]}",
-            font=("Helvetica", 22, "bold"),
-            text_color=self.COLORS['primary']
+            font=("Arial", 22, "bold"),
+            text_color=COLORS['primary']
         )
         title.pack(pady=(0, 20))
 
         # Status badge
         status_color = {
-            'Ativa': self.COLORS['success'],
-            'Agendada': '#ffc107',
-            'Finalizada': self.COLORS['danger']
+            'Ativa': COLORS['success'],
+            'Agendada': COLORS['warning'],
+            'Finalizada': COLORS['danger']
         }
 
         status_badge = ctk.CTkLabel(
             container,
             text=data[11],
-            font=("Helvetica", 14, "bold"),
-            fg_color=status_color.get(data[11], self.COLORS['accent']),
+            font=("Arial", 14, "bold"),
+            fg_color=status_color.get(data[11], COLORS['accent']),
             corner_radius=20,
             padx=20,
             pady=5
@@ -803,7 +706,7 @@ class CampanhasCRUD:
         status_badge.pack(pady=(0, 20))
 
         # Frame de informações
-        info_frame = ctk.CTkFrame(container, fg_color=self.COLORS['dark'], corner_radius=10)
+        info_frame = ctk.CTkFrame(container, fg_color=COLORS['dark_card'], corner_radius=10)
         info_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
         # Campos de informação
@@ -823,8 +726,8 @@ class CampanhasCRUD:
         obj_label = ctk.CTkLabel(
             info_frame,
             text="🎯 Objetivo:",
-            font=("Helvetica", 12, "bold"),
-            text_color=self.COLORS['text']
+            font=("Arial", 12, "bold"),
+            text_color=COLORS['text_primary']
         )
         obj_label.grid(row=len(info_fields), column=0, padx=20, pady=10, sticky="nw")
 
@@ -833,70 +736,13 @@ class CampanhasCRUD:
         obj_text.insert("1.0", data[3] if data[3] else "Não informado")
         obj_text.configure(state="disabled")
 
-        # Buscar dados relacionados
-        # Espaços
-        query_espacos = """
-        SELECT e.Local_fis_dig, e.Tipo
-        FROM Espaco_Dados e
-        JOIN Campanha_Espaco ce ON e.Id_espaco = ce.Id_espaco
-        WHERE ce.Cod_camp = :cod
-        """
-        result_espacos = self.db.execute_query(query_espacos, {'cod': cod_camp})
-
-        if result_espacos and result_espacos[1]:
-            espacos_label = ctk.CTkLabel(
-                info_frame,
-                text="📺 Espaços Utilizados:",
-                font=("Helvetica", 12, "bold"),
-                text_color=self.COLORS['text']
-            )
-            espacos_label.grid(row=len(info_fields) + 1, column=0, padx=20, pady=10, sticky="nw")
-
-            espacos_text = "\n".join([f"• {row[0]} ({row[1]})" for row in result_espacos[1]])
-            espacos_value = ctk.CTkLabel(
-                info_frame,
-                text=espacos_text,
-                font=("Helvetica", 11),
-                text_color=self.COLORS['text_secondary'],
-                justify="left"
-            )
-            espacos_value.grid(row=len(info_fields) + 1, column=1, padx=20, pady=10, sticky="w")
-
-        # Canais
-        query_canais = """
-        SELECT Canais_util
-        FROM Campanha_Canal
-        WHERE Cod_camp = :cod
-        """
-        result_canais = self.db.execute_query(query_canais, {'cod': cod_camp})
-
-        if result_canais and result_canais[1]:
-            canais_label = ctk.CTkLabel(
-                info_frame,
-                text="📡 Canais:",
-                font=("Helvetica", 12, "bold"),
-                text_color=self.COLORS['text']
-            )
-            canais_label.grid(row=len(info_fields) + 2, column=0, padx=20, pady=10, sticky="nw")
-
-            canais_text = ", ".join([row[0] for row in result_canais[1]])
-            canais_value = ctk.CTkLabel(
-                info_frame,
-                text=canais_text,
-                font=("Helvetica", 11),
-                text_color=self.COLORS['text_secondary'],
-                wraplength=450,
-                justify="left"
-            )
-            canais_value.grid(row=len(info_fields) + 2, column=1, padx=20, pady=10, sticky="w")
-
         # Botão fechar
         close_btn = ctk.CTkButton(
             container,
             text="✖️ Fechar",
             command=details_window.destroy,
-            font=("Helvetica", 14, "bold"),
-            fg_color=self.COLORS['secondary'],
+            font=("Arial", 14, "bold"),
+            fg_color=COLORS['secondary'],
             width=150,
             height=40
         )
@@ -907,16 +753,16 @@ class CampanhasCRUD:
         label_widget = ctk.CTkLabel(
             parent,
             text=label,
-            font=("Helvetica", 12, "bold"),
-            text_color=self.COLORS['text']
+            font=("Arial", 12, "bold"),
+            text_color=COLORS['text_primary']
         )
         label_widget.grid(row=row, column=0, padx=20, pady=10, sticky="w")
 
         value_widget = ctk.CTkLabel(
             parent,
             text=value,
-            font=("Helvetica", 11),
-            text_color=self.COLORS['text_secondary']
+            font=("Arial", 11),
+            text_color=COLORS['text_secondary']
         )
         value_widget.grid(row=row, column=1, padx=20, pady=10, sticky="w")
 

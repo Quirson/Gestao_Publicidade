@@ -5,9 +5,33 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9669a22f-202f-479b-a188-dae76ea5a999" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/Ficheiros SQL Oracle/delete_prodecure.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Ficheiros SQL Oracle/p_Gestão_Completa_de_Campanhas.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Ficheiros SQL Oracle/p_Relatório_Financeiro_Detalhado.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Ficheiros SQL Oracle/procedures_criticas.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Ficheiros SQL Oracle/reads_procedures.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Ficheiros SQL Oracle/updates_procedure.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/database_hibrido.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/database_oracle.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/temp.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test_connection.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/fe00e83b-5f96-455b-a291-f0335a8d8021.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/fe00e83b-5f96-455b-a291-f0335a8d8021.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/fe00e83b-5f96-455b-a291-f0335a8d8021/storage_v2/_src_/schema/GESTAO_PUBLICIDADE.rHes7w.zip" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/fe00e83b-5f96-455b-a291-f0335a8d8021/storage_v2/_src_/schema/GESTAO_PUBLICIDADE.rHes7w.zip" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/data_source_mapping.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/data_source_mapping.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/sqldialects.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/sqldialects.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/teste.py" beforeDir="false" afterPath="$PROJECT_DIR$/teste.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Ficheiros SQL Oracle/delete.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Ficheiros SQL Oracle/reads.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Ficheiros SQL Oracle/updates.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/crud_anunciantes.py" beforeDir="false" afterPath="$PROJECT_DIR$/crud_anunciantes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/crud_campanhas.py" beforeDir="false" afterPath="$PROJECT_DIR$/crud_campanhas.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/crud_espacos.py" beforeDir="false" afterPath="$PROJECT_DIR$/crud_espacos.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/crud_pagamentos.py" beforeDir="false" afterPath="$PROJECT_DIR$/crud_pagamentos.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/crud_pecas.py" beforeDir="false" afterPath="$PROJECT_DIR$/crud_pecas.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/teste.py" beforeDir="false" afterPath="$PROJECT_DIR$/Ficheiros SQL Oracle/f_Calcular_Performance_da_Campanha.sql" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -17,6 +41,7 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
+        <option value="SQL File" />
         <option value="Python Script" />
       </list>
     </option>
@@ -36,29 +61,29 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Python.main.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "/media/ngalejunior/NGALE_JR/Programas/Projectos/Projectos Web/rede-social-cms/backend",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.lookFeel",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/media/ngalejunior/NGALE_JR/Programas/Projectos/Projectos Web/rede-social-cms/backend&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
-  "keyToStringList": {
-    "DatabaseDriversLRU": [
-      "oracle"
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;oracle&quot;
     ]
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/Ficheiros SQL Oracle" />
@@ -113,6 +138,10 @@
       <workItem from="1761505531029" duration="2616000" />
       <workItem from="1761645153574" duration="3551000" />
       <workItem from="1761675774853" duration="33000" />
+      <workItem from="1761729004233" duration="7494000" />
+      <workItem from="1761752775618" duration="4000" />
+      <workItem from="1761823888748" duration="4000" />
+      <workItem from="1761891200967" duration="11497000" />
     </task>
     <servers />
   </component>
@@ -131,6 +160,6 @@
     </option>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/Gestao_Publicidade$main.coverage" NAME="main Coverage Results" MODIFIED="1761425438430" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Gestao_Publicidade$main.coverage" NAME="main Coverage Results" MODIFIED="1761900267233" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

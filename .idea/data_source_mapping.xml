@@ -2,6 +2,8 @@
 <project version="4">
   <component name="DataSourcePerFileMappings">
     <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/fe00e83b-5f96-455b-a291-f0335a8d8021/console.sql" value="fe00e83b-5f96-455b-a291-f0335a8d8021" />
+    <file url="file://$PROJECT_DIR$/Ficheiros SQL Oracle/p_Gestão_Completa_de_Campanhas.sql" value="fe00e83b-5f96-455b-a291-f0335a8d8021" />
+    <file url="file://$PROJECT_DIR$/Ficheiros SQL Oracle/procedures_criticas.sql" value="fe00e83b-5f96-455b-a291-f0335a8d8021" />
     <file url="file://$PROJECT_DIR$/Ficheiros SQL Oracle/sequencias.sql" value="fe00e83b-5f96-455b-a291-f0335a8d8021" />
   </component>
 </project>

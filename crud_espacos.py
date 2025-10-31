@@ -1,6 +1,6 @@
 """
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║  MÓDULO CRUD ESPAÇOS PUBLICITÁRIOS - GESTÃO COMPLETA                        ║
+║  MÓDULO CRUD ESPAÇOS PUBLICITÁRIOS - MESMA INTERFACE DO DASHBOARD           ║
 ║  Sistema de Gestão de Publicidade e Marketing                               ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 """
@@ -9,6 +9,27 @@ import customtkinter as ctk
 from tkinter import messagebox, ttk
 import re
 
+# Cores padronizadas do main.py
+COLORS = {
+    'primary': '#1a237e',
+    'primary_light': '#534bae',
+    'primary_dark': '#000051',
+    'secondary': '#d32f2f',
+    'secondary_light': '#ff6659',
+    'secondary_dark': '#9a0007',
+    'accent': '#2979ff',
+    'success': '#00c853',
+    'warning': '#ffab00',
+    'danger': '#ff1744',
+    'info': '#00b8d4',
+    'dark_bg': '#0d1117',
+    'dark_surface': '#161b22',
+    'dark_card': '#21262d',
+    'dark_border': '#30363d',
+    'text_primary': '#f0f6fc',
+    'text_secondary': '#8b949e',
+    'text_disabled': '#484f58'
+}
 
 class EspacosCRUD:
     def __init__(self, parent, db, main_app):
@@ -16,46 +37,50 @@ class EspacosCRUD:
         self.db = db
         self.main_app = main_app
 
-        # Cores
-        self.COLORS = {
-            'primary': '#1f538d',
-            'secondary': '#c41e3a',
-            'accent': '#2d5aa6',
-            'success': '#28a745',
-            'danger': '#dc3545',
-            'dark': '#1a1a1a',
-            'text': '#ffffff',
-            'text_secondary': '#b0b0b0'
-        }
-
         self.create_interface()
         self.load_data()
 
     def create_interface(self):
-        """Cria interface completa"""
-        self.main_container = ctk.CTkScrollableFrame(self.parent, fg_color="transparent")
-        self.main_container.pack(fill="both", expand=True, padx=20, pady=20)
+        """Cria interface IDÊNTICA ao Dashboard"""
+        self.clear_content()
 
-        self.create_toolbar()
-        self.create_search_area()
-        self.create_table()
+        # Container principal - MESMO LAYOUT DO DASHBOARD
+        container = ctk.CTkFrame(self.parent, fg_color=COLORS['dark_bg'])
+        container.pack(fill="both", expand=True, padx=20, pady=20)
 
-    def create_toolbar(self):
-        """Barra de ferramentas"""
-        toolbar = ctk.CTkFrame(self.main_container, fg_color=self.COLORS['dark'],
-                               corner_radius=10, height=80)
+        # Título - MESMO ESTILO DO DASHBOARD
+        title_frame = ctk.CTkFrame(container, fg_color="transparent")
+        title_frame.pack(fill="x", pady=(0, 25))
+
+        ctk.CTkLabel(
+            title_frame,
+            text="📺 Gestão de Espaços Publicitários",
+            font=("Arial", 22, "bold"),
+            text_color=COLORS['text_primary']
+        ).pack(side="left")
+
+        # Barra de ferramentas - MESMO ESTILO
+        self.create_toolbar(container)
+
+        # Tabela - MESMO LAYOUT E DIMENSÕES DO DASHBOARD
+        self.create_espacos_table(container)
+
+    def create_toolbar(self, parent):
+        """Barra de ferramentas igual ao Dashboard"""
+        toolbar = ctk.CTkFrame(parent, fg_color=COLORS['dark_card'],
+                              corner_radius=10, height=70)
         toolbar.pack(fill="x", pady=(0, 20))
         toolbar.pack_propagate(False)
 
         btn_frame = ctk.CTkFrame(toolbar, fg_color="transparent")
-        btn_frame.pack(pady=15, padx=20)
+        btn_frame.pack(expand=True, padx=20, pady=12)
 
         buttons = [
-            ("➕ Novo Espaço", self.open_create_form, self.COLORS['success']),
-            ("✏️ Editar", self.open_edit_form, self.COLORS['primary']),
-            ("🗑️ Excluir", self.delete_record, self.COLORS['danger']),
-            ("🔄 Atualizar", self.load_data, self.COLORS['accent']),
-            ("📊 Estatísticas", self.show_statistics, self.COLORS['secondary'])
+            ("➕ Novo Espaço", self.open_create_form, COLORS['success']),
+            ("✏️ Editar", self.open_edit_form, COLORS['primary']),
+            ("🗑️ Excluir", self.delete_record, COLORS['danger']),
+            ("🔄 Atualizar", self.load_data, COLORS['accent']),
+            ("📊 Estatísticas", self.show_statistics, COLORS['info'])
         ]
 
         for text, command, color in buttons:
@@ -63,182 +88,104 @@ class EspacosCRUD:
                 btn_frame,
                 text=text,
                 command=command,
-                font=("Helvetica", 13, "bold"),
+                font=("Arial", 12, "bold"),
                 fg_color=color,
                 hover_color=self.darken_color(color),
-                width=160,
-                height=40,
+                width=140,
+                height=38,
                 corner_radius=8
             )
-            btn.pack(side="left", padx=5)
+            btn.pack(side="left", padx=8)
 
-    def create_search_area(self):
-        """Área de busca e filtros"""
-        search_frame = ctk.CTkFrame(self.main_container, fg_color=self.COLORS['dark'],
-                                    corner_radius=10)
-        search_frame.pack(fill="x", pady=(0, 20))
+    def create_espacos_table(self, parent):
+        """Tabela COM MESMO LAYOUT E DIMENSÕES do Dashboard"""
+        table_frame = ctk.CTkFrame(parent, fg_color=COLORS['dark_card'], corner_radius=12)
+        table_frame.pack(fill="both", expand=True, pady=10)
 
-        title = ctk.CTkLabel(
-            search_frame,
-            text="🔍 Buscar Espaços Publicitários",
-            font=("Helvetica", 14, "bold"),
-            text_color=self.COLORS['text']
-        )
-        title.pack(pady=10, padx=20, anchor="w")
+        # Cabeçalho - MESMO ESTILO
+        header_frame = ctk.CTkFrame(table_frame, fg_color="transparent")
+        header_frame.pack(fill="x", padx=20, pady=15)
 
-        filter_frame = ctk.CTkFrame(search_frame, fg_color="transparent")
-        filter_frame.pack(fill="x", padx=20, pady=(0, 15))
+        ctk.CTkLabel(
+            header_frame,
+            text="📋 Lista de Espaços Publicitários",
+            font=("Arial", 18, "bold"),
+            text_color=COLORS['text_primary']
+        ).pack(side="left")
 
-        # Busca
-        search_label = ctk.CTkLabel(filter_frame, text="Buscar:", font=("Helvetica", 12))
-        search_label.grid(row=0, column=0, padx=(0, 10), pady=5, sticky="w")
+        # Container da tabela - MESMAS DIMENSÕES
+        table_container = ctk.CTkFrame(table_frame, fg_color="transparent")
+        table_container.pack(fill="both", expand=True, padx=20, pady=(0, 20))
 
-        self.search_var = ctk.StringVar()
-        self.search_entry = ctk.CTkEntry(
-            filter_frame,
-            textvariable=self.search_var,
-            placeholder_text="Localização, tipo ou proprietário...",
-            width=300,
-            height=35
-        )
-        self.search_entry.grid(row=0, column=1, padx=5, pady=5, sticky="w")
-        self.search_var.trace('w', lambda *args: self.filter_data())
+        # Treeview - MESMO ESTILO EXATO
+        self.create_treeview(table_container)
 
-        # Filtro por tipo
-        tipo_label = ctk.CTkLabel(filter_frame, text="Tipo:", font=("Helvetica", 12))
-        tipo_label.grid(row=0, column=2, padx=(20, 10), pady=5, sticky="w")
-
-        self.tipo_filter = ctk.CTkComboBox(
-            filter_frame,
-            values=self.get_tipos_list(),
-            width=200,
-            height=35,
-            command=lambda x: self.filter_data()
-        )
-        self.tipo_filter.grid(row=0, column=3, padx=5, pady=5, sticky="w")
-        self.tipo_filter.set("Todos")
-
-        # Filtro por disponibilidade
-        disp_label = ctk.CTkLabel(filter_frame, text="Disponibilidade:", font=("Helvetica", 12))
-        disp_label.grid(row=0, column=4, padx=(20, 10), pady=5, sticky="w")
-
-        self.disp_filter = ctk.CTkComboBox(
-            filter_frame,
-            values=["Todos", "Disponível", "Ocupado", "Manutenção", "Sempre Disponível"],
-            width=180,
-            height=35,
-            command=lambda x: self.filter_data()
-        )
-        self.disp_filter.grid(row=0, column=5, padx=5, pady=5, sticky="w")
-        self.disp_filter.set("Todos")
-
-        # Limpar
-        clear_btn = ctk.CTkButton(
-            filter_frame,
-            text="🗑️ Limpar",
-            command=self.clear_filters,
-            width=100,
-            height=35,
-            fg_color=self.COLORS['secondary']
-        )
-        clear_btn.grid(row=0, column=6, padx=(20, 0), pady=5)
-
-    def create_table(self):
-        """Tabela de dados"""
-        table_frame = ctk.CTkFrame(self.main_container, fg_color=self.COLORS['dark'],
-                                   corner_radius=10)
-        table_frame.pack(fill="both", expand=True)
-
-        title = ctk.CTkLabel(
-            table_frame,
-            text="📺 Lista de Espaços Publicitários",
-            font=("Helvetica", 14, "bold"),
-            text_color=self.COLORS['text']
-        )
-        title.pack(pady=10, padx=20, anchor="w")
-
-        tree_container = ctk.CTkFrame(table_frame, fg_color="transparent")
-        tree_container.pack(fill="both", expand=True, padx=20, pady=(0, 20))
-
-        # Estilo
+    def create_treeview(self, parent):
+        """Cria treeview IDÊNTICO ao do Dashboard"""
         style = ttk.Style()
         style.theme_use("clam")
         style.configure("Treeview",
-                        background=self.COLORS['dark'],
-                        foreground=self.COLORS['text'],
-                        fieldbackground=self.COLORS['dark'],
-                        rowheight=30)
+                        background=COLORS['dark_card'],
+                        foreground=COLORS['text_primary'],
+                        fieldbackground=COLORS['dark_card'],
+                        rowheight=35)
         style.configure("Treeview.Heading",
-                        background=self.COLORS['primary'],
-                        foreground=self.COLORS['text'],
-                        font=("Helvetica", 11, "bold"))
-        style.map("Treeview",
-                  background=[('selected', self.COLORS['accent'])])
+                        background=COLORS['primary'],
+                        foreground=COLORS['text_primary'],
+                        font=("Arial", 11, "bold"))
+        style.map("Treeview", background=[('selected', COLORS['accent'])])
 
-        # Scrollbars
-        vsb = ttk.Scrollbar(tree_container, orient="vertical")
-        hsb = ttk.Scrollbar(tree_container, orient="horizontal")
+        # COLUNAS COM MESMAS LARGURAS DO DASHBOARD
+        columns = ('ID', 'Localização', 'Tipo', 'Dimensões', 'Preço Base', 'Disponibilidade', 'Proprietário')
+        self.tree = ttk.Treeview(parent, columns=columns, show='headings', height=12)  # MESMA ALTURA
 
-        # Treeview
-        columns = ('ID', 'Localização', 'Tipo', 'Dimensões', 'Preço Base',
-                   'Disponibilidade', 'Proprietário')
-        self.tree = ttk.Treeview(
-            tree_container,
-            columns=columns,
-            show='headings',
-            yscrollcommand=vsb.set,
-            xscrollcommand=hsb.set
-        )
-
-        vsb.config(command=self.tree.yview)
-        hsb.config(command=self.tree.xview)
-
-        # Configurar colunas
-        widths = [80, 220, 180, 120, 120, 140, 200]
+        # MESMAS LARGURAS DE COLUNA
+        widths = [80, 220, 150, 120, 120, 140, 180]
         for col, width in zip(columns, widths):
             self.tree.heading(col, text=col)
             self.tree.column(col, width=width, anchor="center")
 
-        # Layout
+        # SCROLLBARS - MESMO POSICIONAMENTO
+        v_scroll = ttk.Scrollbar(parent, orient="vertical", command=self.tree.yview)
+        h_scroll = ttk.Scrollbar(parent, orient="horizontal", command=self.tree.xview)
+        self.tree.configure(yscrollcommand=v_scroll.set, xscrollcommand=h_scroll.set)
+
+        # LAYOUT IDÊNTICO - MESMO grid()
         self.tree.grid(row=0, column=0, sticky="nsew")
-        vsb.grid(row=0, column=1, sticky="ns")
-        hsb.grid(row=1, column=0, sticky="ew")
+        v_scroll.grid(row=0, column=1, sticky="ns")
+        h_scroll.grid(row=1, column=0, sticky="ew")
 
-        tree_container.grid_rowconfigure(0, weight=1)
-        tree_container.grid_columnconfigure(0, weight=1)
+        parent.grid_rowconfigure(0, weight=1)
+        parent.grid_columnconfigure(0, weight=1)
 
-        # Duplo clique
+        # Bind duplo clique
         self.tree.bind('<Double-1>', lambda e: self.open_edit_form())
 
     def load_data(self):
-        """Carrega dados do banco"""
+        """Carrega dados - MESMA LÓGICA DO DASHBOARD"""
         for item in self.tree.get_children():
             self.tree.delete(item)
 
         query = """
-                SELECT Id_espaco, \
-                       Local_fis_dig, \
-                       Tipo, \
-                       Dimensoes, \
-                       Preco_base, \
-                       Disponibilidade, \
-                       Proprietario
-                FROM Espaco_Dados
-                ORDER BY Local_fis_dig \
-                """
+        SELECT Id_espaco, Local_fis_dig, Tipo, Dimensoes, Preco_base, 
+               Disponibilidade, Proprietario
+        FROM Espaco_Dados
+        ORDER BY Local_fis_dig
+        """
 
         result = self.db.execute_query(query)
 
         if result and result[1]:
             self.all_data = result[1]
             for row in result[1]:
+                # FORMATAÇÃO CONSISTENTE
                 id_espaco = row[0]
-                local = row[1][:35]
-                tipo = row[2][:30]
+                local = row[1]
+                tipo = row[2]
                 dimensoes = row[3]
-                preco = f"{row[4]:,.2f} MT"
+                preco = f"MT {row[4]:,.2f}"
                 disponib = row[5]
-                proprietario = row[6][:30]
+                proprietario = row[6]
 
                 # Tag de cor por disponibilidade
                 tag = disponib.lower().replace(' ', '_')
@@ -246,57 +193,22 @@ class EspacosCRUD:
                     id_espaco, local, tipo, dimensoes, preco, disponib, proprietario
                 ), tags=(tag,))
 
-            # Configurar cores
+            # CONFIGURAR CORES - MESMAS DO DASHBOARD
             self.tree.tag_configure('disponível', foreground='#28a745')
             self.tree.tag_configure('sempre_disponível', foreground='#5cb85c')
             self.tree.tag_configure('ocupado', foreground='#dc3545')
             self.tree.tag_configure('manutenção', foreground='#ffc107')
+        else:
+            messagebox.showinfo("Info", "Nenhum espaço encontrado.")
 
-    def filter_data(self):
-        """Filtra dados na tabela"""
-        for item in self.tree.get_children():
-            self.tree.delete(item)
+    def clear_content(self):
+        """Limpa conteúdo - MESMA FUNÇÃO DO MAIN"""
+        for widget in self.parent.winfo_children():
+            widget.destroy()
 
-        search_text = self.search_var.get().lower()
-        tipo_filter = self.tipo_filter.get()
-        disp_filter = self.disp_filter.get()
-
-        if hasattr(self, 'all_data'):
-            for row in self.all_data:
-                local = str(row[1]).lower()
-                tipo = str(row[2])
-                proprietario = str(row[6]).lower()
-                disponib = row[5]
-
-                # Aplicar filtros
-                match_search = (search_text in local or search_text in proprietario)
-                match_tipo = (tipo_filter == "Todos" or tipo_filter in tipo)
-                match_disp = (disp_filter == "Todos" or disp_filter == disponib)
-
-                if match_search and match_tipo and match_disp:
-                    tag = disponib.lower().replace(' ', '_')
-                    self.tree.insert('', 'end', values=(
-                        row[0], row[1][:35], row[2][:30], row[3],
-                        f"{row[4]:,.2f} MT", row[5], row[6][:30]
-                    ), tags=(tag,))
-
-    def clear_filters(self):
-        """Limpa filtros"""
-        self.search_var.set("")
-        self.tipo_filter.set("Todos")
-        self.disp_filter.set("Todos")
-        self.load_data()
-
-    def get_tipos_list(self):
-        """Retorna lista de tipos"""
-        query = "SELECT DISTINCT Tipo FROM Espaco_Dados ORDER BY Tipo"
-        result = self.db.execute_query(query)
-
-        tipos = ["Todos"]
-        if result and result[1]:
-            tipos.extend([row[0] for row in result[1]])
-
-        return tipos
+    # =============================================================================
+    # FUNÇÕES ESPECÍFICAS DO CRUD (MANTIDAS COM PEQUENOS AJUSTES)
+    # =============================================================================
 
     def open_create_form(self):
         """Formulário de criação"""
@@ -328,8 +240,8 @@ class EspacosCRUD:
         self.form_window.transient(self.parent)
         self.form_window.grab_set()
 
-        # Container
-        form_container = ctk.CTkScrollableFrame(self.form_window, fg_color="#2b2b2b")
+        # Container com scroll - MESMO ESTILO
+        form_container = ctk.CTkScrollableFrame(self.form_window, fg_color=COLORS['dark_bg'])
         form_container.pack(fill="both", expand=True, padx=20, pady=20)
 
         # Título
@@ -337,13 +249,13 @@ class EspacosCRUD:
         title = ctk.CTkLabel(
             form_container,
             text=title_text,
-            font=("Helvetica", 20, "bold"),
-            text_color=self.COLORS['text']
+            font=("Arial", 20, "bold"),
+            text_color=COLORS['text_primary']
         )
         title.pack(pady=(0, 20))
 
         # Frame do formulário
-        form_frame = ctk.CTkFrame(form_container, fg_color=self.COLORS['dark'],
+        form_frame = ctk.CTkFrame(form_container, fg_color=COLORS['dark_card'],
                                   corner_radius=10)
         form_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
@@ -386,7 +298,8 @@ class EspacosCRUD:
 
         # Disponibilidade
         label = ctk.CTkLabel(form_frame, text="Disponibilidade:*",
-                             font=("Helvetica", 12, "bold"))
+                             font=("Arial", 12, "bold"),
+                             text_color=COLORS['text_primary'])
         label.grid(row=row, column=0, padx=20, pady=10, sticky="w")
 
         fields['disponibilidade'] = ctk.CTkComboBox(
@@ -404,14 +317,15 @@ class EspacosCRUD:
 
         # Histórico de Ocupação (Textbox)
         label = ctk.CTkLabel(form_frame, text="Histórico Ocupação:",
-                             font=("Helvetica", 12, "bold"))
+                             font=("Arial", 12, "bold"),
+                             text_color=COLORS['text_primary'])
         label.grid(row=row, column=0, padx=20, pady=10, sticky="nw")
 
         fields['historico'] = ctk.CTkTextbox(form_frame, width=500, height=80)
         fields['historico'].grid(row=row, column=1, padx=20, pady=10, sticky="w")
         row += 1
 
-        # Botões
+        # Botões - MESMO ESTILO
         btn_frame = ctk.CTkFrame(form_frame, fg_color="transparent")
         btn_frame.grid(row=row, column=0, columnspan=2, pady=30)
 
@@ -419,8 +333,8 @@ class EspacosCRUD:
             btn_frame,
             text="💾 Salvar",
             command=lambda: self.save_record(mode, fields, id_espaco),
-            font=("Helvetica", 14, "bold"),
-            fg_color=self.COLORS['success'],
+            font=("Arial", 14, "bold"),
+            fg_color=COLORS['success'],
             width=150,
             height=40
         )
@@ -430,8 +344,8 @@ class EspacosCRUD:
             btn_frame,
             text="❌ Cancelar",
             command=self.form_window.destroy,
-            font=("Helvetica", 14, "bold"),
-            fg_color=self.COLORS['danger'],
+            font=("Arial", 14, "bold"),
+            fg_color=COLORS['danger'],
             width=150,
             height=40
         )
@@ -446,7 +360,9 @@ class EspacosCRUD:
     def create_field(self, parent, label_text, row, fields, field_name,
                      width=300, readonly=False):
         """Cria campo do formulário"""
-        label = ctk.CTkLabel(parent, text=label_text, font=("Helvetica", 12, "bold"))
+        label = ctk.CTkLabel(parent, text=label_text,
+                            font=("Arial", 12, "bold"),
+                            text_color=COLORS['text_primary'])
         label.grid(row=row, column=0, padx=20, pady=10, sticky="w")
 
         entry = ctk.CTkEntry(parent, width=width, height=35)
@@ -460,20 +376,12 @@ class EspacosCRUD:
     def load_form_data(self, fields, id_espaco):
         """Carrega dados no formulário"""
         query = """
-                SELECT Id_espaco, \
-                       Local_fis_dig, \
-                       Tipo, \
-                       Dimensoes, \
-                       Resolucao,
-                       Visibilidade, \
-                       Horario_maior, \
-                       Preco_base, \
-                       Disponibilidade,
-                       Proprietario, \
-                       Historico_ocup
-                FROM Espaco_Dados
-                WHERE Id_espaco = :id \
-                """
+        SELECT Id_espaco, Local_fis_dig, Tipo, Dimensoes, Resolucao,
+               Visibilidade, Horario_maior, Preco_base, Disponibilidade,
+               Proprietario, Historico_ocup
+        FROM Espaco_Dados
+        WHERE Id_espaco = :id
+        """
         result = self.db.execute_query(query, {'id': id_espaco})
 
         if result and result[1]:
@@ -532,11 +440,11 @@ class EspacosCRUD:
 
                 # Insert
                 query = """
-                        INSERT INTO Espaco_Dados
-                        (Id_espaco, Local_fis_dig, Tipo, Dimensoes, Resolucao, Visibilidade,
-                         Horario_maior, Preco_base, Disponibilidade, Proprietario, Historico_ocup)
-                        VALUES (:id, :local, :tipo, :dim, :resol, :vis, :hor, :preco, :disp, :prop, :hist) \
-                        """
+                INSERT INTO Espaco_Dados
+                (Id_espaco, Local_fis_dig, Tipo, Dimensoes, Resolucao, Visibilidade,
+                 Horario_maior, Preco_base, Disponibilidade, Proprietario, Historico_ocup)
+                VALUES (:id, :local, :tipo, :dim, :resol, :vis, :hor, :preco, :disp, :prop, :hist)
+                """
 
                 params = {
                     'id': novo_id,
@@ -561,19 +469,19 @@ class EspacosCRUD:
 
             else:  # edit
                 query = """
-                        UPDATE Espaco_Dados
-                        SET Local_fis_dig   = :local,
-                            Tipo            = :tipo,
-                            Dimensoes       = :dim,
-                            Resolucao       = :resol,
-                            Visibilidade    = :vis,
-                            Horario_maior   = :hor,
-                            Preco_base      = :preco,
-                            Disponibilidade = :disp,
-                            Proprietario    = :prop,
-                            Historico_ocup  = :hist
-                        WHERE Id_espaco = :id \
-                        """
+                UPDATE Espaco_Dados
+                SET Local_fis_dig = :local,
+                    Tipo = :tipo,
+                    Dimensoes = :dim,
+                    Resolucao = :resol,
+                    Visibilidade = :vis,
+                    Horario_maior = :hor,
+                    Preco_base = :preco,
+                    Disponibilidade = :disp,
+                    Proprietario = :prop,
+                    Historico_ocup = :hist
+                WHERE Id_espaco = :id
+                """
 
                 params = {
                     'id': id_espaco,
@@ -611,11 +519,7 @@ class EspacosCRUD:
         local = item['values'][1]
 
         # Verificar uso em campanhas
-        query_camp = """
-                     SELECT COUNT(*) \
-                     FROM Campanha_Espaco \
-                     WHERE Id_espaco = :id \
-                     """
+        query_camp = "SELECT COUNT(*) FROM Campanha_Espaco WHERE Id_espaco = :id"
         result_camp = self.db.execute_query(query_camp, {'id': id_espaco})
 
         if result_camp and result_camp[1] and result_camp[1][0][0] > 0:
@@ -663,16 +567,16 @@ class EspacosCRUD:
         y = (stats_window.winfo_screenheight() // 2) - (600 // 2)
         stats_window.geometry(f"800x600+{x}+{y}")
 
-        # Container
-        container = ctk.CTkScrollableFrame(stats_window, fg_color="#2b2b2b")
+        # Container - MESMO ESTILO
+        container = ctk.CTkScrollableFrame(stats_window, fg_color=COLORS['dark_bg'])
         container.pack(fill="both", expand=True, padx=20, pady=20)
 
         # Título
         title = ctk.CTkLabel(
             container,
             text="📊 Estatísticas de Espaços Publicitários",
-            font=("Helvetica", 20, "bold"),
-            text_color=self.COLORS['primary']
+            font=("Arial", 20, "bold"),
+            text_color=COLORS['primary']
         )
         title.pack(pady=(0, 30))
 
@@ -683,36 +587,24 @@ class EspacosCRUD:
         total = result_total[1][0][0] if result_total and result_total[1] else 0
 
         # Por disponibilidade
-        query_disp = """
-                     SELECT Disponibilidade, COUNT(*)
-                     FROM Espaco_Dados
-                     GROUP BY Disponibilidade \
-                     """
+        query_disp = "SELECT Disponibilidade, COUNT(*) FROM Espaco_Dados GROUP BY Disponibilidade"
         result_disp = self.db.execute_query(query_disp)
 
         # Por tipo
-        query_tipo = """
-                     SELECT Tipo, COUNT(*)
-                     FROM Espaco_Dados
-                     GROUP BY Tipo
-                     ORDER BY COUNT(*) DESC \
-                     """
+        query_tipo = "SELECT Tipo, COUNT(*) FROM Espaco_Dados GROUP BY Tipo ORDER BY COUNT(*) DESC"
         result_tipo = self.db.execute_query(query_tipo)
 
         # Preço médio
-        query_preco = """
-                      SELECT AVG(Preco_base), MIN(Preco_base), MAX(Preco_base)
-                      FROM Espaco_Dados \
-                      """
+        query_preco = "SELECT AVG(Preco_base), MIN(Preco_base), MAX(Preco_base) FROM Espaco_Dados"
         result_preco = self.db.execute_query(query_preco)
 
-        # Cards de estatísticas
+        # Cards de estatísticas - MESMO ESTILO
         stats_frame = ctk.CTkFrame(container, fg_color="transparent")
         stats_frame.pack(fill="x", pady=20)
 
         # Total
         card1 = self.create_stat_card(stats_frame, "📺 Total de Espaços",
-                                      str(total), self.COLORS['primary'])
+                                      str(total), COLORS['primary'])
         card1.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
 
         # Disponíveis
@@ -723,96 +615,30 @@ class EspacosCRUD:
                     disponiveis += row[1]
 
         card2 = self.create_stat_card(stats_frame, "✅ Disponíveis",
-                                      str(disponiveis), self.COLORS['success'])
+                                      str(disponiveis), COLORS['success'])
         card2.grid(row=0, column=1, padx=10, pady=10, sticky="ew")
 
         # Preço médio
         if result_preco and result_preco[1] and result_preco[1][0][0]:
-            preco_medio = f"{result_preco[1][0][0]:,.2f} MT"
+            preco_medio = f"MT {result_preco[1][0][0]:,.2f}"
         else:
-            preco_medio = "0.00 MT"
+            preco_medio = "MT 0.00"
 
         card3 = self.create_stat_card(stats_frame, "💰 Preço Médio",
-                                      preco_medio, self.COLORS['accent'])
+                                      preco_medio, COLORS['accent'])
         card3.grid(row=0, column=2, padx=10, pady=10, sticky="ew")
 
         stats_frame.grid_columnconfigure(0, weight=1)
         stats_frame.grid_columnconfigure(1, weight=1)
         stats_frame.grid_columnconfigure(2, weight=1)
 
-        # Tabela por disponibilidade
-        if result_disp and result_disp[1]:
-            disp_frame = ctk.CTkFrame(container, fg_color=self.COLORS['dark'])
-            disp_frame.pack(fill="x", pady=10)
-
-            disp_title = ctk.CTkLabel(
-                disp_frame,
-                text="📊 Por Disponibilidade",
-                font=("Helvetica", 14, "bold")
-            )
-            disp_title.pack(pady=10)
-
-            for row in result_disp[1]:
-                item_frame = ctk.CTkFrame(disp_frame, fg_color="transparent")
-                item_frame.pack(fill="x", padx=20, pady=5)
-
-                label = ctk.CTkLabel(
-                    item_frame,
-                    text=f"{row[0]}:",
-                    font=("Helvetica", 12),
-                    width=200,
-                    anchor="w"
-                )
-                label.pack(side="left", padx=10)
-
-                value = ctk.CTkLabel(
-                    item_frame,
-                    text=f"{row[1]} espaços",
-                    font=("Helvetica", 12, "bold"),
-                    text_color=self.COLORS['secondary']
-                )
-                value.pack(side="left")
-
-        # Tabela por tipo
-        if result_tipo and result_tipo[1]:
-            tipo_frame = ctk.CTkFrame(container, fg_color=self.COLORS['dark'])
-            tipo_frame.pack(fill="x", pady=10)
-
-            tipo_title = ctk.CTkLabel(
-                tipo_frame,
-                text="📊 Por Tipo",
-                font=("Helvetica", 14, "bold")
-            )
-            tipo_title.pack(pady=10)
-
-            for row in result_tipo[1]:
-                item_frame = ctk.CTkFrame(tipo_frame, fg_color="transparent")
-                item_frame.pack(fill="x", padx=20, pady=5)
-
-                label = ctk.CTkLabel(
-                    item_frame,
-                    text=f"{row[0]}:",
-                    font=("Helvetica", 12),
-                    width=300,
-                    anchor="w"
-                )
-                label.pack(side="left", padx=10)
-
-                value = ctk.CTkLabel(
-                    item_frame,
-                    text=f"{row[1]} espaços",
-                    font=("Helvetica", 12, "bold"),
-                    text_color=self.COLORS['secondary']
-                )
-                value.pack(side="left")
-
-        # Botão fechar
+        # Botão fechar - MESMO ESTILO
         close_btn = ctk.CTkButton(
             container,
             text="✖️ Fechar",
             command=stats_window.destroy,
-            font=("Helvetica", 14, "bold"),
-            fg_color=self.COLORS['secondary'],
+            font=("Arial", 14, "bold"),
+            fg_color=COLORS['secondary'],
             width=150,
             height=40
         )
@@ -826,23 +652,23 @@ class EspacosCRUD:
         title_label = ctk.CTkLabel(
             card,
             text=title,
-            font=("Helvetica", 12),
-            text_color=self.COLORS['text']
+            font=("Arial", 12),
+            text_color=COLORS['text_primary']
         )
         title_label.pack(pady=(15, 5))
 
         value_label = ctk.CTkLabel(
             card,
             text=str(value),
-            font=("Helvetica", 24, "bold"),
-            text_color=self.COLORS['text']
+            font=("Arial", 20, "bold"),
+            text_color=COLORS['text_primary']
         )
         value_label.pack()
 
         return card
 
     def darken_color(self, color):
-        """Escurece cor"""
+        """Escurece cor para efeito hover"""
         color = color.lstrip('#')
         rgb = tuple(int(color[i:i + 2], 16) for i in (0, 2, 4))
         darker_rgb = tuple(max(0, c - 30) for c in rgb)
@@ -850,5 +676,5 @@ class EspacosCRUD:
 
 
 def show_espacos_module(parent, db, main_app):
-    """Função de integração"""
+    """Função para integrar com main app"""
     EspacosCRUD(parent, db, main_app)
